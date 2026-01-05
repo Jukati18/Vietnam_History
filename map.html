@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnamese History - Interactive Map</title>
+    <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="site-title">Vietnamese History</h1>
+            
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search historical events..."
+                    autocomplete="off"
+                >
+                <button class="search-button">🔍</button>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="map.html" class="nav-link active">Map</a>
+                <a href="timeline.html" class="nav-link">Timeline</a>
+                <a href="events.html" class="nav-link">Events</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Period Filter -->
+    <section class="filter-section">
+        <div class="filter-container">
+            <h2 class="filter-title">FILTER BY HISTORICAL PERIOD</h2>
+            
+            <!-- Row 1: Main Periods -->
+            <div class="filter-row">
+                <label class="filter-row-label">Main Period:</label>
+                <div class="filter-buttons" id="mainPeriodsFilter">
+                    <!-- Dynamically loaded from periods.json -->
+                </div>
+            </div>
+            
+            <!-- Row 2: Sub Periods -->
+            <div class="filter-row">
+                <label class="filter-row-label">Sub Period:</label>
+                <div class="filter-buttons" id="subPeriodsFilter">
+                    <!-- Dynamically loaded based on selected main period -->
+                    <span class="filter-placeholder">Select a main period first</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Container -->
+    <main class="map-section">
+        <div class="map-container">
+            <div class="map-controls">
+                <button id="zoomIn" class="control-btn">🔍 Zoom In</button>
+                <button id="zoomOut" class="control-btn">🔍 Zoom Out</button>
+                <button id="resetView" class="control-btn">↻ Reset</button>
+            </div>
+
+            <div id="mapWrapper" class="map-wrapper">
+                <div class="map-image-container">
+                <!-- Background map image (static, not zoomable) -->
+                <img src="images/vietnam-map.png" 
+                    alt="Vietnam Map" 
+                    class="static-map-image">
+                
+                <!-- Zoomable container for SVG -->
+                <div class="zoomable-container">
+                    <!-- SVG overlay for markers (will be zoomed) -->
+                    <svg id="vietnamMap" 
+                        class="zoomable-svg"
+                        viewBox="0 0 300 800" 
+                        xmlns="http://www.w3.org/2000/svg">
+                        <g id="eventMarkers"></g>
+                        <g id="eventLabels"></g>
+                    </svg>
+                </div>
+            </div>
+
+                <!-- Event Popup -->
+                <div id="eventPopup" class="event-popup">
+                    <button class="popup-close">×</button>
+                    <h3 class="popup-title" id="popupTitle"></h3>
+                    <div class="popup-period" id="popupPeriod"></div>
+                    <div class="popup-date" id="popupDate"></div>
+                    <div class="popup-location" id="popupLocation"></div>
+                    <p class="popup-description" id="popupDescription"></p>
+                    <div class="popup-actions">
+                        <button class="popup-btn primary" onclick="viewEventDetails()">View Details</button>
+                        <button class="popup-btn secondary" onclick="viewOnTimeline()">Timeline</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Event Annotations -->
+    <section class="annotations-section">
+        <div class="annotations-container">
+            <h2 class="annotations-title">EVENTS SHOWN ON MAP</h2>
+            <div class="annotations-list" id="annotationsList">
+                <!-- Dynamically populated with visible events -->
+            </div>
+        </div>
+    </section>
+
+    <script src="js/map.js"></script>
+</body>
+</html>
