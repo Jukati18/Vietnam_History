@@ -367,13 +367,6 @@ function initializeEventListeners() {
         map.setView(VIETNAM_CENTER, 6);
     });
     
-    document.getElementById('showAllEvents').addEventListener('click', () => {
-        if (markers.length > 0) {
-            const group = L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.1));
-        }
-    });
-    
     document.getElementById('resetFilters').addEventListener('click', () => {
         selectedPeriodId = null;
         selectedSubPeriodId = null;
@@ -399,7 +392,7 @@ function initializeEventListeners() {
     });
 }
 
-// Search functionality
+// Search functionality with improved algorithm
 function handleSearch(e) {
     const query = e.target.value.trim().toLowerCase();
     const resultsContainer = document.getElementById('searchResults');
@@ -409,12 +402,39 @@ function handleSearch(e) {
         return;
     }
     
-    const results = events.filter(event => 
-        event.title?.toLowerCase().includes(query) ||
-        event.titleVietnamese?.toLowerCase().includes(query) ||
-        event.description?.toLowerCase().includes(query) ||
-        event.shortDescription?.toLowerCase().includes(query)
-    );
+    // Improved search algorithm with relevance scoring
+    const results = events.map(event => {
+        let score = 0;
+        const title = (event.title || '').toLowerCase();
+        const titleVi = (event.titleVietnamese || '').toLowerCase();
+        const desc = (event.description || '').toLowerCase();
+        const shortDesc = (event.shortDescription || '').toLowerCase();
+        
+        // Exact title match - highest priority
+        if (title === query || titleVi === query) {
+            score = 1000;
+        }
+        // Title starts with query - high priority
+        else if (title.startsWith(query) || titleVi.startsWith(query)) {
+            score = 500;
+        }
+        // Title contains query - medium priority
+        else if (title.includes(query) || titleVi.includes(query)) {
+            score = 300;
+        }
+        // Description contains query - lower priority
+        else if (shortDesc.includes(query)) {
+            score = 100;
+        }
+        else if (desc.includes(query)) {
+            score = 50;
+        }
+        
+        return { event, score };
+    })
+    .filter(item => item.score > 0) // Only keep matches
+    .sort((a, b) => b.score - a.score) // Sort by relevance
+    .map(item => item.event);
     
     displaySearchResults(results);
 }
@@ -441,27 +461,67 @@ function displaySearchResults(results) {
     
     resultsContainer.classList.add('active');
     
+    // Add click handlers to show only the selected event
     resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
         item.addEventListener('click', () => {
             const eventId = item.dataset.eventId;
             const event = events.find(e => (e._id?.$oid || e._id) === eventId);
             
             if (event) {
-                const coords = getEventCoordinates(event);
-                if (coords) {
-                    map.setView([coords.lat, coords.lng], 12);
-                    const marker = markers.find(m => {
-                        const pos = m.getLatLng();
-                        return pos.lat === coords.lat && pos.lng === coords.lng;
-                    });
-                    if (marker) marker.openPopup();
-                }
+                // Clear all filters
+                selectedPeriodId = null;
+                selectedSubPeriodId = null;
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                
+                // Show only this event on map
+                showSingleEvent(event);
+                
+                // Update annotations to show only this event
+                renderAnnotations([event]);
+                document.getElementById('visibleCount').textContent = '1';
             }
             
             resultsContainer.classList.remove('active');
             document.getElementById('searchInput').value = '';
         });
     });
+}
+
+// Show single event on map
+function showSingleEvent(event) {
+    const coords = getEventCoordinates(event);
+    
+    if (!coords) {
+        alert('This event does not have location coordinates.');
+        return;
+    }
+    
+    // Clear all existing markers
+    clearMarkers();
+    
+    // Get event details
+    const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
+    const color = period?.color || '#667eea';
+    
+    // Create custom icon
+    const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-icon" style="background: ${color};">📍</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+    
+    // Create marker for this event only
+    const marker = L.marker([coords.lat, coords.lng], { icon })
+        .addTo(map)
+        .bindPopup(createPopupContent(event, period))
+        .openPopup(); // Automatically open popup
+    
+    markers.push(marker);
+    
+    // Zoom to this event (closer zoom level)
+    map.setView([coords.lat, coords.lng], 12);
 }
 
 // View event details (placeholder)
