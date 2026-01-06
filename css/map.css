@@ -216,9 +216,9 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.filter-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.filter-btn.loading {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 /* Map Section */
@@ -235,12 +235,10 @@ body {
 }
 
 .map-controls {
-    position: absolute;
-    top: 30px;
-    right: 30px;
+    margin-bottom: 15px;
     display: flex;
     gap: 10px;
-    z-index: 100;
+    flex-wrap: wrap;
 }
 
 .control-btn {
@@ -263,122 +261,79 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Map Wrapper */
-.map-wrapper {
-    position: relative;
-    background: linear-gradient(to bottom, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
-    border-radius: 12px;
-    min-height: 700px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.vietnam-map {
-    width: 600px;
-    height: 1200px;
-    max-height: 800px;
-    transition: transform 0.3s ease;
-}
-
-.vietnam-outline {
-    fill: #86efac;
-    stroke: #059669;
-    stroke-width: 4;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
-}
-
-/* Event Markers */
-.event-marker {
-    cursor: pointer;
-    transition: all 0.3s;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
-}
-
-.event-marker:hover {
-    transform: scale(1.4);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
-}
-
-.event-marker circle {
-    stroke: white;
-    stroke-width: 3;
-}
-
-.event-marker.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Event Labels */
-.event-label {
-    font-size: 11px;
-    font-weight: 600;
-    fill: #1e293b;
-    pointer-events: none;
-    text-anchor: middle;
-    opacity: 0.8;
-}
-
-.event-label.hidden {
-    opacity: 0;
-}
-
-/* Event Popup */
-.event-popup {
+/* Loading Indicator */
+.loading-indicator {
     position: absolute;
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    max-width: 350px;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s;
-    transform: translateY(10px);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
     z-index: 1000;
+    background: white;
+    padding: 30px 50px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
-.event-popup.active {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+.loading-indicator.hidden {
+    display: none;
 }
 
-.popup-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: #f1f5f9;
+.spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 15px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #667eea;
     border-radius: 50%;
-    font-size: 18px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator p {
     color: #64748b;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.popup-close:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+/* Leaflet Map */
+.leaflet-map {
+    width: 100%;
+    height: 600px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.popup-title {
+/* Custom Leaflet Popup Styles */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content {
+    margin: 16px;
+    min-width: 250px;
+    max-width: 350px;
+}
+
+.event-popup-content {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.event-popup-title {
     font-size: 18px;
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 8px;
-    padding-right: 30px;
     line-height: 1.3;
 }
 
-.popup-period {
+.event-popup-period {
     display: inline-block;
     padding: 4px 12px;
     background: #ede9fe;
@@ -391,34 +346,36 @@ body {
     margin-bottom: 8px;
 }
 
-.popup-date {
+.event-popup-date {
     font-size: 13px;
     color: #64748b;
     font-weight: 600;
     margin-bottom: 8px;
 }
 
-.popup-location {
+.event-popup-location {
     font-size: 13px;
     color: #64748b;
     margin-bottom: 12px;
 }
 
-.popup-description {
+.event-popup-description {
     font-size: 14px;
     color: #475569;
     line-height: 1.6;
     margin-bottom: 16px;
+    max-height: 150px;
+    overflow-y: auto;
 }
 
-.popup-actions {
+.event-popup-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
-.popup-btn {
+.event-popup-btn {
     flex: 1;
-    padding: 10px 16px;
+    padding: 8px 16px;
     border: none;
     border-radius: 8px;
     font-size: 13px;
@@ -427,24 +384,47 @@ body {
     transition: all 0.3s;
 }
 
-.popup-btn.primary {
+.event-popup-btn.primary {
     background: #667eea;
     color: white;
 }
 
-.popup-btn.primary:hover {
+.event-popup-btn.primary:hover {
     background: #5a67d8;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.popup-btn.secondary {
+.event-popup-btn.secondary {
     background: #f1f5f9;
     color: #475569;
 }
 
-.popup-btn.secondary:hover {
+.event-popup-btn.secondary:hover {
     background: #e2e8f0;
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+    background: transparent;
+    border: none;
+}
+
+.marker-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.marker-icon:hover {
+    transform: scale(1.2);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Annotations Section */
@@ -464,13 +444,28 @@ body {
     font-weight: 700;
     color: #94a3b8;
     letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.event-count {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
     margin-bottom: 16px;
+}
+
+.event-count #visibleCount {
+    color: #667eea;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .annotations-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .annotation-item {
@@ -503,6 +498,7 @@ body {
 
 .annotation-text {
     flex: 1;
+    min-width: 0;
 }
 
 .annotation-name {
@@ -510,6 +506,9 @@ body {
     font-weight: 600;
     color: #1e293b;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .annotation-date {
@@ -518,6 +517,7 @@ body {
 }
 
 .no-events-message {
+    grid-column: 1 / -1;
     text-align: center;
     padding: 40px 20px;
     color: #94a3b8;
@@ -541,7 +541,7 @@ body {
     }
     
     .annotations-list {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     }
 }
 
@@ -561,21 +561,8 @@ body {
         font-size: 20px;
     }
     
-    .map-controls {
-        position: static;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    
-    .control-btn {
-        flex: 1;
-        min-width: 100px;
-    }
-    
-    .vietnam-map {
-        width: 100%;
-        height: auto;
-        max-height: 600px;
+    .leaflet-map {
+        height: 450px;
     }
     
     .filter-row-label {
@@ -588,32 +575,21 @@ body {
     }
 }
 
-/* Loading Animation */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
-    }
+/* Scrollbar Styling */
+.annotations-list::-webkit-scrollbar {
+    width: 8px;
 }
 
-.loading {
-    animation: pulse 1.5s ease-in-out infinite;
+.annotations-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
 }
 
-/* Pulse Animation for Markers */
-@keyframes markerPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-    50% {
-        transform: scale(1.3);
-        opacity: 0.3;
-    }
+.annotations-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
 }
 
-.marker-pulse {
-    animation: markerPulse 2s ease-in-out infinite;
+.annotations-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }

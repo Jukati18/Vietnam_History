@@ -1,95 +1,120 @@
-// Vietnamese History Interactive Map
-// Updated version with periods/subPeriods filtering and location mapping
-
+// Vietnamese History Interactive Map with Leaflet & MongoDB Atlas
 // Configuration
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://localhost:3000/api'; // Your backend URL
 
-// Vietnam Location Coordinates Mapping
-const LOCATION_MAP = {
-    // Northern Vietnam (y: 20-220)
-    'Hà Nội': { x: 150, y: 150 },
-    'Hanoi': { x: 150, y: 150 },
-    'Thăng Long': { x: 150, y: 150 },
-    'Phú Thọ': { x: 140, y: 120 },
-    'Phong Châu': { x: 140, y: 120 },
-    'Bạch Đằng': { x: 165, y: 170 },
-    'Điện Biên Phủ': { x: 120, y: 90 },
-    'Cao Bằng': { x: 155, y: 60 },
-    
-    // North-Central (y: 220-400)
-    'Thanh Hóa': { x: 145, y: 260 },
-    'Nghệ An': { x: 140, y: 320 },
-    'Hà Tĩnh': { x: 145, y: 360 },
-    
-    // Central (y: 400-550)
-    'Huế': { x: 155, y: 430 },
-    'Thừa Thiên Huế': { x: 155, y: 430 },
-    'Đà Nẵng': { x: 160, y: 460 },
-    'Quảng Nam': { x: 158, y: 490 },
-    'Hội An': { x: 158, y: 495 },
-    
-    // South-Central (y: 550-700)
-    'Quy Nhơn': { x: 165, y: 580 },
-    'Nha Trang': { x: 168, y: 630 },
-    'Đà Lạt': { x: 155, y: 650 },
-    
-    // Southern (y: 700-790)
-    'Sài Gòn': { x: 145, y: 740 },
-    'Saigon': { x: 145, y: 740 },
-    'Hồ Chí Minh': { x: 145, y: 740 },
-    'Cần Thơ': { x: 135, y: 770 },
-    'Cà Mau': { x: 128, y: 785 },
-    
-    // Default
-    'Vietnam': { x: 150, y: 400 },
-    'Việt Nam': { x: 150, y: 400 }
-};
-
-// State
+// Map State
+let map;
+let markers = [];
 let periods = [];
 let subPeriods = [];
 let events = [];
-let currentZoom = 1;
 let selectedPeriodId = null;
 let selectedSubPeriodId = null;
-let currentEventId = null;
 
-// Initialize
+// Vietnam center coordinates
+const VIETNAM_CENTER = [16.0544, 107.8569];
+const VIETNAM_BOUNDS = [
+    [8.1790665, 102.14441], // Southwest
+    [23.393395, 109.469229]  // Northeast
+];
+
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
+    initializeMap();
     await loadAllData();
     initializeEventListeners();
 });
 
-// Load data from JSON files
+// Initialize Leaflet Map
+function initializeMap() {
+    // Create map centered on Vietnam
+    map = L.map('map', {
+        center: VIETNAM_CENTER,
+        zoom: 6,
+        minZoom: 5,
+        maxZoom: 18,
+        maxBounds: [
+            [5, 100],  // Southwest bound
+            [25, 112]  // Northeast bound
+        ]
+    });
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Fit map to Vietnam bounds
+    map.fitBounds(VIETNAM_BOUNDS);
+
+    console.log('✅ Map initialized');
+}
+
+// Load all data from MongoDB Atlas via backend API
 async function loadAllData() {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    
     try {
+        loadingIndicator.classList.remove('hidden');
+        
         // Load periods
-        const periodsResponse = await fetch('js/Vietnam_History.periods.json');
-        periods = await periodsResponse.json();
+        const periodsResponse = await fetch(`${API_URL}/periods`);
+        if (periodsResponse.ok) {
+            periods = await periodsResponse.json();
+            renderMainPeriods();
+        }
         
         // Load subPeriods
-        const subPeriodsResponse = await fetch('js/Vietnam_History.subPeriods.json');
-        subPeriods = await subPeriodsResponse.json();
+        const subPeriodsResponse = await fetch(`${API_URL}/subperiods`);
+        if (subPeriodsResponse.ok) {
+            subPeriods = await subPeriodsResponse.json();
+        }
         
-        // Load events (sample - replace with your events file)
-        const eventsResponse = await fetch('js/Vietnam_History.events.json');
-        events = await eventsResponse.json();
+        // Load all events
+        const eventsResponse = await fetch(`${API_URL}/events`);
+        if (eventsResponse.ok) {
+            events = await eventsResponse.json();
+            console.log(`✅ Loaded ${events.length} events from database`);
+        }
         
-        // Initialize UI
-        renderMainPeriods();
-        console.log('✅ Data loaded successfully');
+        loadingIndicator.classList.add('hidden');
         
     } catch (error) {
         console.error('Error loading data:', error);
-        // Use fallback data if files not found
-        initializeFallbackData();
+        loadingIndicator.innerHTML = `
+            <div style="color: #ef4444;">
+                <p>⚠️ Unable to connect to database</p>
+                <p style="font-size: 12px; margin-top: 10px;">Make sure your backend server is running</p>
+            </div>
+        `;
+        
+        // Try to load from local JSON files as fallback
+        await loadLocalData();
     }
 }
 
-// Initialize with fallback data if JSON files not available
-function initializeFallbackData() {
-    // This will be called if JSON files aren't found
-    console.log('Using fallback data');
+// Fallback: Load from local JSON files
+async function loadLocalData() {
+    try {
+        console.log('📁 Trying to load local data...');
+        
+        const periodsResponse = await fetch('js/Vietnam_History.periods.json');
+        periods = await periodsResponse.json();
+        
+        const subPeriodsResponse = await fetch('js/Vietnam_History.subPeriods.json');
+        subPeriods = await subPeriodsResponse.json();
+        
+        const eventsResponse = await fetch('js/events.json');
+        events = await eventsResponse.json();
+        
+        renderMainPeriods();
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        
+        console.log('✅ Loaded data from local files');
+    } catch (error) {
+        console.error('❌ Failed to load local data:', error);
+    }
 }
 
 // Render main period filter buttons
@@ -97,27 +122,24 @@ function renderMainPeriods() {
     const container = document.getElementById('mainPeriodsFilter');
     container.innerHTML = '';
     
-    // Sort periods by order
     const sortedPeriods = [...periods].sort((a, b) => a.order - b.order);
     
     sortedPeriods.forEach(period => {
         const button = document.createElement('button');
         button.className = 'filter-btn';
         button.textContent = period.name;
-        button.dataset.periodId = period._id.$oid;
+        button.dataset.periodId = period._id.$oid || period._id;
         button.style.background = period.color || '#94a3b8';
         
         button.addEventListener('click', () => selectMainPeriod(period));
-        
         container.appendChild(button);
     });
 }
 
 // Select main period
 function selectMainPeriod(period) {
-    selectedPeriodId = period._id.$oid;
+    selectedPeriodId = period._id.$oid || period._id;
     
-    // Update button states
     document.querySelectorAll('#mainPeriodsFilter .filter-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.periodId === selectedPeriodId) {
@@ -125,13 +147,8 @@ function selectMainPeriod(period) {
         }
     });
     
-    // Render sub-periods for this period
     renderSubPeriods(selectedPeriodId);
-    
-    // Reset sub-period selection
     selectedSubPeriodId = null;
-    
-    // Update map
     updateMapDisplay();
 }
 
@@ -140,40 +157,36 @@ function renderSubPeriods(periodId) {
     const container = document.getElementById('subPeriodsFilter');
     container.innerHTML = '';
     
-    // Filter sub-periods by selected period
     const filteredSubPeriods = subPeriods.filter(sp => {
-        return sp.periodId && sp.periodId.$oid === periodId;
+        const spPeriodId = sp.periodId?.$oid || sp.periodId;
+        return spPeriodId === periodId;
     });
     
     if (filteredSubPeriods.length === 0) {
-        container.innerHTML = '<span class="filter-placeholder">No sub-periods available for this period</span>';
+        container.innerHTML = '<span class="filter-placeholder">No sub-periods for this period</span>';
         return;
     }
     
-    // Sort by order
     const sortedSubPeriods = [...filteredSubPeriods].sort((a, b) => a.order - b.order);
     
     sortedSubPeriods.forEach(subPeriod => {
         const button = document.createElement('button');
         button.className = 'filter-btn';
         button.textContent = subPeriod.name;
-        button.dataset.subPeriodId = subPeriod._id.$oid;
+        button.dataset.subPeriodId = subPeriod._id.$oid || subPeriod._id;
         
-        // Use parent period color if subPeriod doesn't have one
-        const parentPeriod = periods.find(p => p._id.$oid === periodId);
+        const parentPeriod = periods.find(p => (p._id.$oid || p._id) === periodId);
         button.style.background = subPeriod.color || parentPeriod?.color || '#94a3b8';
         
         button.addEventListener('click', () => selectSubPeriod(subPeriod));
-        
         container.appendChild(button);
     });
 }
 
 // Select sub-period
 function selectSubPeriod(subPeriod) {
-    selectedSubPeriodId = subPeriod._id.$oid;
+    selectedSubPeriodId = subPeriod._id.$oid || subPeriod._id;
     
-    // Update button states
     document.querySelectorAll('#subPeriodsFilter .filter-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.subPeriodId === selectedSubPeriodId) {
@@ -181,172 +194,123 @@ function selectSubPeriod(subPeriod) {
         }
     });
     
-    // Update map
     updateMapDisplay();
 }
 
-// Update map display based on selected filters
+// Update map display based on filters
 function updateMapDisplay() {
-    // Filter events based on selections
     let filteredEvents = events;
     
     if (selectedPeriodId) {
         filteredEvents = filteredEvents.filter(event => {
-            return event.periodId && event.periodId.$oid === selectedPeriodId;
+            const eventPeriodId = event.periodId?.$oid || event.periodId;
+            return eventPeriodId === selectedPeriodId;
         });
     }
     
     if (selectedSubPeriodId) {
         filteredEvents = filteredEvents.filter(event => {
-            return event.subPeriodId && event.subPeriodId.$oid === selectedSubPeriodId;
+            const eventSubPeriodId = event.subPeriodId?.$oid || event.subPeriodId;
+            return eventSubPeriodId === selectedSubPeriodId;
         });
     }
     
-    // Render markers
     renderEventMarkers(filteredEvents);
-    
-    // Update annotations
     renderAnnotations(filteredEvents);
+    
+    // Update visible count
+    document.getElementById('visibleCount').textContent = filteredEvents.length;
 }
 
-// Convert location to coordinates
-function getCoordinatesFromLocation(location) {
-    if (!location) return null;
-    
-    // If location already has coordinates
-    if (location.coordinates) {
-        // Scale from lat/lng to SVG coordinates
-        // Vietnam spans approximately 8°N to 24°N, 102°E to 110°E
-        const lat = location.coordinates.lat;
-        const lng = location.coordinates.lng;
-        
-        // Map to SVG viewBox (600 x 1200)
-        const x = ((lng - 102) / 8) * 200 + 250; // Adjust for width
-        const y = ((24 - lat) / 16) * 1000 + 100; // Adjust for height (inverted)
-        
-        return { x, y };
-    }
-    
-    // Try to find location in map
-    const locationName = location.name || location.modernName || location;
-    
-    // Direct match
-    if (LOCATION_MAP[locationName]) {
-        return LOCATION_MAP[locationName];
-    }
-    
-    // Try province
-    if (location.province && LOCATION_MAP[location.province]) {
-        return LOCATION_MAP[location.province];
-    }
-    
-    // Search for partial match
-    const keys = Object.keys(LOCATION_MAP);
-    for (let key of keys) {
-        if (locationName.includes(key) || key.includes(locationName)) {
-            return LOCATION_MAP[key];
-        }
-    }
-    
-    // Default fallback
-    console.warn('Location not found in map:', locationName);
-    return LOCATION_MAP['Vietnam'];
+// Clear all markers from map
+function clearMarkers() {
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
 }
 
-// Render event markers on map
+// Render event markers on Leaflet map
 function renderEventMarkers(filteredEvents) {
-    const markersGroup = document.getElementById('eventMarkers');
-    markersGroup.innerHTML = '';
+    clearMarkers();
     
     filteredEvents.forEach(event => {
-        const coords = getCoordinatesFromLocation(event.location);
-        if (!coords) return;
+        const coords = getEventCoordinates(event);
+        if (!coords) {
+            console.warn('No coordinates for event:', event.title);
+            return;
+        }
         
-        const marker = createEventMarker(event, coords);
-        markersGroup.appendChild(marker);
-    });
-}
-
-// Create event marker SVG element
-function createEventMarker(event, coords) {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('event-marker');
-    g.setAttribute('data-event-id', event._id?.$oid || event.id);
-    
-    // Get color from period
-    const period = periods.find(p => p._id.$oid === event.periodId?.$oid);
-    const color = period?.color || '#667eea';
-    
-    // Pulsing circle
-    const pulseCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    pulseCircle.setAttribute('cx', coords.x);
-    pulseCircle.setAttribute('cy', coords.y);
-    pulseCircle.setAttribute('r', '12');
-    pulseCircle.setAttribute('fill', color);
-    pulseCircle.setAttribute('opacity', '0.3');
-    pulseCircle.classList.add('marker-pulse');
-    
-    // Main marker
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', coords.x);
-    circle.setAttribute('cy', coords.y);
-    circle.setAttribute('r', '10');
-    circle.setAttribute('fill', color);
-    
-    g.appendChild(pulseCircle);
-    g.appendChild(circle);
-    
-    // Add click event
-    g.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showEventPopup(event, coords);
+        const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
+        const color = period?.color || '#667eea';
+        
+        // Create custom icon
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div class="marker-icon" style="background: ${color};">📍</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        });
+        
+        // Create marker
+        const marker = L.marker([coords.lat, coords.lng], { icon })
+            .addTo(map)
+            .bindPopup(createPopupContent(event, period));
+        
+        markers.push(marker);
     });
     
-    return g;
+    // Fit map to show all markers
+    if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
 }
 
-// Show event popup
-function showEventPopup(event, coords) {
-    const popup = document.getElementById('eventPopup');
-    currentEventId = event._id?.$oid || event.id;
+// Get coordinates from event
+function getEventCoordinates(event) {
+    // Check if event has coordinates
+    if (event.location?.coordinates) {
+        return {
+            lat: event.location.coordinates.lat,
+            lng: event.location.coordinates.lng
+        };
+    }
     
-    // Get period name
-    const period = periods.find(p => p._id.$oid === event.periodId?.$oid);
-    const subPeriod = subPeriods.find(sp => sp._id.$oid === event.subPeriodId?.$oid);
+    // Try to get from location name
+    const locationName = event.location?.name || event.location?.province;
+    if (locationName) {
+        console.warn(`Event "${event.title}" has no coordinates. Add lat/lng to location.`);
+    }
     
-    // Update popup content
-    document.getElementById('popupTitle').textContent = event.title || event.titleVietnamese;
-    document.getElementById('popupPeriod').textContent = period?.name || 'Unknown Period';
-    document.getElementById('popupDate').textContent = `📅 ${event.date?.displayDate || event.date?.year || 'Unknown'}`;
-    
-    const locationText = event.location?.name || event.location?.province || 'Unknown Location';
-    document.getElementById('popupLocation').textContent = `📍 ${locationText}`;
-    
-    document.getElementById('popupDescription').textContent = 
-        event.shortDescription || event.description || 'No description available';
-    
-    // Position popup relative to marker
-    const mapWrapper = document.getElementById('mapWrapper');
-    const mapRect = mapWrapper.getBoundingClientRect();
-    const svgRect = document.getElementById('vietnamMap').getBoundingClientRect();
-    
-    // Calculate position
-    const scaleX = svgRect.width / 600;
-    const scaleY = svgRect.height / 1200;
-    
-    const left = coords.x * scaleX + (svgRect.left - mapRect.left);
-    const top = coords.y * scaleY + (svgRect.top - mapRect.top) - 10;
-    
-    popup.style.left = left + 'px';
-    popup.style.top = top + 'px';
-    popup.style.transform = 'translate(-50%, -100%)';
-    popup.classList.add('active');
+    return null;
 }
 
-// Close popup
-function closePopup() {
-    document.getElementById('eventPopup').classList.remove('active');
-    currentEventId = null;
+// Create popup content HTML
+function createPopupContent(event, period) {
+    const title = event.title || event.titleVietnamese || 'Unknown Event';
+    const periodName = period?.name || 'Unknown Period';
+    const date = event.date?.displayDate || event.date?.year || 'Unknown Date';
+    const location = event.location?.name || event.location?.province || 'Unknown Location';
+    const description = event.shortDescription || event.description || 'No description available';
+    const eventId = event._id?.$oid || event._id;
+    
+    return `
+        <div class="event-popup-content">
+            <div class="event-popup-title">${title}</div>
+            <div class="event-popup-period">${periodName}</div>
+            <div class="event-popup-date">📅 ${date}</div>
+            <div class="event-popup-location">📍 ${location}</div>
+            <div class="event-popup-description">${description}</div>
+            <div class="event-popup-actions">
+                <button class="event-popup-btn primary" onclick="viewEventDetails('${eventId}')">
+                    View Details
+                </button>
+                <button class="event-popup-btn secondary" onclick="viewOnTimeline('${eventId}')">
+                    Timeline
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // Render annotations list
@@ -359,7 +323,6 @@ function renderAnnotations(filteredEvents) {
         return;
     }
     
-    // Sort by year
     const sortedEvents = [...filteredEvents].sort((a, b) => {
         const yearA = a.date?.year || 0;
         const yearB = b.date?.year || 0;
@@ -367,12 +330,12 @@ function renderAnnotations(filteredEvents) {
     });
     
     sortedEvents.forEach(event => {
-        const period = periods.find(p => p._id.$oid === event.periodId?.$oid);
+        const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
         const color = period?.color || '#667eea';
+        const coords = getEventCoordinates(event);
         
         const item = document.createElement('div');
         item.className = 'annotation-item';
-        item.dataset.eventId = event._id?.$oid || event.id;
         
         item.innerHTML = `
             <div class="annotation-color" style="background: ${color}"></div>
@@ -382,18 +345,16 @@ function renderAnnotations(filteredEvents) {
             </div>
         `;
         
-        item.addEventListener('click', () => {
-            const coords = getCoordinatesFromLocation(event.location);
-            if (coords) {
-                showEventPopup(event, coords);
-                
-                // Scroll map to event
-                const marker = document.querySelector(`[data-event-id="${event._id?.$oid || event.id}"]`);
-                if (marker) {
-                    marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
+        if (coords) {
+            item.addEventListener('click', () => {
+                map.setView([coords.lat, coords.lng], 10);
+                const marker = markers.find(m => {
+                    const pos = m.getLatLng();
+                    return pos.lat === coords.lat && pos.lng === coords.lng;
+                });
+                if (marker) marker.openPopup();
+            });
+        }
         
         container.appendChild(item);
     });
@@ -402,18 +363,29 @@ function renderAnnotations(filteredEvents) {
 // Initialize event listeners
 function initializeEventListeners() {
     // Map controls
-    document.getElementById('zoomIn').addEventListener('click', zoomIn);
-    document.getElementById('zoomOut').addEventListener('click', zoomOut);
-    document.getElementById('resetView').addEventListener('click', resetView);
+    document.getElementById('centerVietnam').addEventListener('click', () => {
+        map.setView(VIETNAM_CENTER, 6);
+    });
     
-    // Popup close
-    document.querySelector('.popup-close').addEventListener('click', closePopup);
-    
-    // Close popup when clicking outside
-    document.getElementById('mapWrapper').addEventListener('click', (e) => {
-        if (e.target.id === 'mapWrapper' || e.target.id === 'vietnamMap') {
-            closePopup();
+    document.getElementById('showAllEvents').addEventListener('click', () => {
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
         }
+    });
+    
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        selectedPeriodId = null;
+        selectedSubPeriodId = null;
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('subPeriodsFilter').innerHTML = '<span class="filter-placeholder">Select a main period first</span>';
+        
+        clearMarkers();
+        document.getElementById('annotationsList').innerHTML = '<div class="no-events-message">Select a period to see events on the map</div>';
+        document.getElementById('visibleCount').textContent = '0';
+        
+        map.setView(VIETNAM_CENTER, 6);
     });
     
     // Search
@@ -458,9 +430,9 @@ function displaySearchResults(results) {
     }
     
     resultsContainer.innerHTML = results.slice(0, 8).map(event => {
-        const period = periods.find(p => p._id.$oid === event.periodId?.$oid);
+        const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
         return `
-            <div class="search-result-item" data-event-id="${event._id?.$oid || event.id}">
+            <div class="search-result-item" data-event-id="${event._id?.$oid || event._id}">
                 <div class="search-result-title">${event.title || event.titleVietnamese}</div>
                 <div class="search-result-info">${event.date?.displayDate || 'Unknown'} • ${period?.name || 'Unknown Period'}</div>
             </div>
@@ -469,25 +441,21 @@ function displaySearchResults(results) {
     
     resultsContainer.classList.add('active');
     
-    // Add click handlers
     resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
         item.addEventListener('click', () => {
             const eventId = item.dataset.eventId;
-            const event = events.find(e => (e._id?.$oid || e.id) === eventId);
+            const event = events.find(e => (e._id?.$oid || e._id) === eventId);
+            
             if (event) {
-                // Set filters
-                if (event.periodId) {
-                    const period = periods.find(p => p._id.$oid === event.periodId.$oid);
-                    if (period) selectMainPeriod(period);
+                const coords = getEventCoordinates(event);
+                if (coords) {
+                    map.setView([coords.lat, coords.lng], 12);
+                    const marker = markers.find(m => {
+                        const pos = m.getLatLng();
+                        return pos.lat === coords.lat && pos.lng === coords.lng;
+                    });
+                    if (marker) marker.openPopup();
                 }
-                if (event.subPeriodId) {
-                    const subPeriod = subPeriods.find(sp => sp._id.$oid === event.subPeriodId.$oid);
-                    if (subPeriod) selectSubPeriod(subPeriod);
-                }
-                
-                // Show popup
-                const coords = getCoordinatesFromLocation(event.location);
-                if (coords) showEventPopup(event, coords);
             }
             
             resultsContainer.classList.remove('active');
@@ -496,60 +464,14 @@ function displaySearchResults(results) {
     });
 }
 
-// Zoom functions
-function zoomIn() {
-    currentZoom = Math.min(currentZoom + 0.2, 2.5);
-    applyZoom();
-}
-
-function zoomOut() {
-    currentZoom = Math.max(currentZoom - 0.2, 0.5);
-    applyZoom();
-}
-
-function resetView() {
-    currentZoom = 1;
-    applyZoom();
-    closePopup();
-}
-
-function applyZoom() {
-    const mapWrapper = document.getElementById('mapWrapper');
-    const svg = document.getElementById('vietnamMap');
-    
-    // Scale the entire wrapper for better control
-    mapWrapper.style.transform = `scale(${currentZoom})`;
-    mapWrapper.style.transformOrigin = 'center center';
-    
-    // Also update the viewBox of the SVG if needed
-    const baseViewBox = "0 0 300 800";
-    if (currentZoom !== 1) {
-        // Calculate new viewBox dimensions
-        const scaleFactor = 1 / currentZoom;
-        const [x, y, width, height] = baseViewBox.split(' ').map(Number);
-        const newWidth = width * scaleFactor;
-        const newHeight = height * scaleFactor;
-        const newX = x + (width - newWidth) / 2;
-        const newY = y + (height - newHeight) / 2;
-        
-        svg.setAttribute('viewBox', `${newX} ${newY} ${newWidth} ${newHeight}`);
-    } else {
-        svg.setAttribute('viewBox', baseViewBox);
-    }
-}
-
 // View event details (placeholder)
-function viewEventDetails() {
-    if (currentEventId) {
-        window.location.href = `event-detail.html?id=${currentEventId}`;
-    }
+function viewEventDetails(eventId) {
+    window.location.href = `event-detail.html?id=${eventId}`;
 }
 
 // View on timeline (placeholder)
-function viewOnTimeline() {
-    if (currentEventId) {
-        window.location.href = `timeline.html?event=${currentEventId}`;
-    }
+function viewOnTimeline(eventId) {
+    window.location.href = `timeline.html?event=${eventId}`;
 }
 
 // Utility: Debounce
