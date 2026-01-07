@@ -94,29 +94,6 @@ async function loadAllData() {
     }
 }
 
-// Fallback: Load from local JSON files
-async function loadLocalData() {
-    try {
-        console.log('📁 Trying to load local data...');
-        
-        const periodsResponse = await fetch('js/Vietnam_History.periods.json');
-        periods = await periodsResponse.json();
-        
-        const subPeriodsResponse = await fetch('js/Vietnam_History.subPeriods.json');
-        subPeriods = await subPeriodsResponse.json();
-        
-        const eventsResponse = await fetch('js/events.json');
-        events = await eventsResponse.json();
-        
-        renderMainPeriods();
-        document.getElementById('loadingIndicator').classList.add('hidden');
-        
-        console.log('✅ Loaded data from local files');
-    } catch (error) {
-        console.error('❌ Failed to load local data:', error);
-    }
-}
-
 // Render main period filter buttons
 function renderMainPeriods() {
     const container = document.getElementById('mainPeriodsFilter');
