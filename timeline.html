@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnamese History - Interactive Timeline</title>
+    
+    <!-- Vis.js Timeline Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/timeline.css">
+</head>
+<body>
+    <!-- Hero Header -->
+    <header class="hero-header">
+        <div class="hero-content">
+            <h1 class="hero-title">Vietnamese History Timeline</h1>
+            <p class="hero-subtitle">Explore 4,000+ years of Vietnamese history from 2879 BC to present</p>
+        </div>
+    </header>
+
+    <!-- Main Header with Navigation -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="site-title">🇻🇳 Vietnamese History</h1>
+            
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search historical events..."
+                    autocomplete="off"
+                >
+                <button class="search-button">🔍</button>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="map.html" class="nav-link">Map</a>
+                <a href="timeline.html" class="nav-link active">Timeline</a>
+                <a href="events.html" class="nav-link">Events</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Period Filter -->
+    <section class="filter-section">
+        <div class="filter-container">
+            <div class="filter-buttons" id="periodsFilter">
+                <button class="filter-btn active" data-period="all">All Periods</button>
+                <button class="filter-btn loading">Loading...</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalEvents">0</div>
+                <div class="stat-label">Historical Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="yearsOfHistory">4,904</div>
+                <div class="stat-label">Years of History</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="periodsCount">7</div>
+                <div class="stat-label">Sub Periods</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="visibleEvents">0</div>
+                <div class="stat-label">Visible Events</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Container -->
+    <main class="timeline-section">
+        <div class="timeline-container">
+            <!-- Timeline Controls -->
+            <div class="timeline-controls">
+                <button id="zoomOut" class="control-btn">➖ Zoom Out</button>
+                <button id="zoomIn" class="control-btn">➕ Zoom In</button>
+                <button id="resetView" class="control-btn">🔄 Reset</button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <p>Loading timeline...</p>
+            </div>
+
+            <!-- Vis.js Timeline -->
+            <div id="timeline" class="vis-timeline"></div>
+        </div>
+    </main>
+
+    <!-- Legend Section -->
+    <section class="legend-section">
+        <div class="legend-container">
+            <h2 class="legend-title">Historical Periods</h2>
+            <div class="legend-items" id="legendItems">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <div class="modal-date" id="modalDate"></div>
+                <div class="modal-period" id="modalPeriod"></div>
+            </div>
+            <div class="modal-body">
+                <p id="modalDescription"></p>
+                <div class="modal-location" id="modalLocation"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-view-map" id="viewOnMap">📍 View on Map</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="js/timeline.js"></script>
+</body>
+</html>

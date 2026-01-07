@@ -88,9 +88,6 @@ async function loadAllData() {
                 <p style="font-size: 12px; margin-top: 10px;">Make sure your backend server is running</p>
             </div>
         `;
-        
-        // Try to load from local JSON files as fallback
-        await loadLocalData();
     }
 }
 
@@ -281,9 +278,6 @@ function createPopupContent(event, period) {
             <div class="event-popup-actions">
                 <button class="event-popup-btn primary" onclick="viewEventDetails('${eventId}')">
                     View Details
-                </button>
-                <button class="event-popup-btn secondary" onclick="viewOnTimeline('${eventId}')">
-                    Timeline
                 </button>
             </div>
         </div>
