@@ -497,7 +497,7 @@ function showSingleEvent(event) {
 
 // View event details (placeholder)
 function viewEventDetails(eventId) {
-    window.location.href = `event-detail.html?id=${eventId}`;
+    window.location.href = `events-detail.html?id=${eventId}`;
 }
 
 // View on timeline (placeholder)
