@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnamese History - Events</title>
+    <link rel="stylesheet" href="css/events.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="site-title">🇻🇳 Vietnamese History</h1>
+            
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search historical events..."
+                    autocomplete="off"
+                >
+                <button class="search-button">🔍</button>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="map.html" class="nav-link">Map</a>
+                <a href="timeline.html" class="nav-link">Timeline</a>
+                <a href="events.html" class="nav-link active">Events</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Vietnamese Historical Events</h1>
+            <p class="hero-subtitle">Explore significant events that shaped Vietnam's 4,000+ year history</p>
+        </div>
+    </section>
+
+    <!-- Period Filter -->
+    <section class="filter-section">
+        <div class="filter-container">
+            <h2 class="filter-title">📚 FILTER BY PERIOD</h2>
+            <div class="filter-buttons" id="periodsFilter">
+                <button class="filter-btn loading">Loading periods...</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalEvents">0</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="visibleEvents">0</div>
+                <div class="stat-label">Visible Events</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="periodsCount">0</div>
+                <div class="stat-label">Historical Periods</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Grid -->
+    <main class="events-section">
+        <div class="events-container">
+            <div class="section-header">
+                <h2 class="section-title">Historical Events</h2>
+                <div class="sort-controls">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="date-asc">Date (Oldest First)</option>
+                        <option value="date-desc">Date (Newest First)</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <p>Loading events...</p>
+            </div>
+
+            <!-- Events Grid -->
+            <div class="events-grid" id="eventsGrid">
+                <!-- Events will be dynamically loaded here -->
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResultsMessage" class="no-results-message" style="display: none;">
+                <p>No events found. Try adjusting your filters.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Vietnamese History Project. Made with ❤️ for education.</p>
+    </footer>
+
+    <script src="js/events.js"></script>
+</body>
+</html>

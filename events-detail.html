@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Detail - Vietnamese History</title>
+    <link rel="stylesheet" href="css/events-detail.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="site-title">🇻🇳 Vietnamese History</h1>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="map.html" class="nav-link">Map</a>
+                <a href="timeline.html" class="nav-link">Timeline</a>
+                <a href="events.html" class="nav-link">Events</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <div class="breadcrumb-container">
+            <a href="index.html" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="events.html" class="breadcrumb-link">Events</a>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current" id="breadcrumbEventName">Loading...</span>
+        </div>
+    </nav>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="spinner"></div>
+        <p>Loading event details...</p>
+    </div>
+
+    <!-- Event Detail -->
+    <main class="detail-page" id="detailPage" style="display: none;">
+        <!-- Hero Section -->
+        <div class="detail-hero" id="detailHero">
+            <div class="detail-hero-overlay">
+                <h1 class="detail-title" id="detailTitle">Event Title</h1>
+                <p class="detail-title-vi" id="detailTitleVi">Tiếng Việt</p>
+                <div class="detail-meta-bar">
+                    <div class="detail-meta-item" id="detailDate">📅 Date</div>
+                    <div class="detail-meta-item" id="detailLocation">📍 Location</div>
+                    <div class="detail-meta-item" id="detailPeriod">👑 Period</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Body -->
+        <div class="detail-body">
+            <!-- Main Content -->
+            <div class="detail-main">
+                <!-- Description Section -->
+                <div class="detail-section">
+                    <h2 class="detail-section-title">📖 Description</h2>
+                    <div class="detail-text" id="detailDescription">
+                        <p>Loading description...</p>
+                    </div>
+                </div>
+
+                <!-- Significance Section -->
+                <div class="detail-section" id="significanceSection">
+                    <h2 class="detail-section-title">⭐ Historical Significance</h2>
+                    <div class="detail-text" id="detailSignificance">
+                        <p>Loading significance...</p>
+                    </div>
+                </div>
+
+                <!-- Key Figures Section -->
+                <div class="detail-section" id="keyFiguresSection" style="display: none;">
+                    <h2 class="detail-section-title">👥 Key Figures</h2>
+                    <div class="key-figures" id="keyFiguresContainer">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Related Events Section -->
+                <div class="detail-section" id="relatedEventsSection" style="display: none;">
+                    <h2 class="detail-section-title">🔗 Related Events</h2>
+                    <div class="related-events" id="relatedEventsContainer">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="detail-sidebar">
+                <!-- Event Information Box -->
+                <div class="sidebar-box">
+                    <h3 class="sidebar-box-title">ℹ️ Event Information</h3>
+                    <div class="sidebar-info-item">
+                        <div class="sidebar-label">Date</div>
+                        <div class="sidebar-value" id="sidebarDate">Loading...</div>
+                    </div>
+                    <div class="sidebar-info-item">
+                        <div class="sidebar-label">Location</div>
+                        <div class="sidebar-value" id="sidebarLocation">Loading...</div>
+                    </div>
+                    <div class="sidebar-info-item">
+                        <div class="sidebar-label">Period</div>
+                        <div class="sidebar-value" id="sidebarPeriod">Loading...</div>
+                    </div>
+                    <div class="sidebar-info-item" id="sidebarTypeItem">
+                        <div class="sidebar-label">Type</div>
+                        <div class="sidebar-value" id="sidebarType">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Actions Box -->
+                <div class="sidebar-box">
+                    <h3 class="sidebar-box-title">🎯 Quick Actions</h3>
+                    <button class="sidebar-button" id="viewOnMapBtn">📍 View on Map</button>
+                    <button class="sidebar-button" id="viewOnTimelineBtn">⏱️ View on Timeline</button>
+                    <button class="sidebar-button secondary" onclick="window.print()">🖨️ Print</button>
+                    <button class="sidebar-button secondary" id="shareBtn">📤 Share</button>
+                </div>
+
+                <!-- Location Map Box -->
+                <div class="sidebar-box" id="locationMapBox" style="display: none;">
+                    <h3 class="sidebar-box-title">🗺️ Location</h3>
+                    <div class="mini-map" id="miniMap">📍</div>
+                </div>
+
+                <!-- Tags Box -->
+                <div class="sidebar-box" id="tagsBox" style="display: none;">
+                    <h3 class="sidebar-box-title">🏷️ Tags</h3>
+                    <div class="card-tags" id="eventTags">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message" style="display: none;">
+        <div class="error-content">
+            <h2>⚠️ Event Not Found</h2>
+            <p>The event you're looking for could not be found.</p>
+            <a href="events.html" class="btn-primary">Back to Events</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Vietnamese History Project. Made with ❤️ for education.</p>
+    </footer>
+
+    <script src="js/events-detail.js"></script>
+</body>
+</html>
