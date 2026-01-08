@@ -91,6 +91,9 @@ async function loadAllData() {
 
         showLoading(false);
         
+        // Check if there's a selected event from detail page
+        checkForSelectedEvent();
+        
         if (allEvents.length === 0) {
             showError('No events found in database. Please check your MongoDB data.');
         }
@@ -98,6 +101,86 @@ async function loadAllData() {
         console.error('Error loading data:', error);
         showError('Failed to load timeline data. Error: ' + error.message);
         showLoading(false);
+    }
+}
+
+// Check for selected event from detail page
+function checkForSelectedEvent() {
+    const selectedEventData = sessionStorage.getItem('selectedTimelineEvent');
+    
+    if (selectedEventData) {
+        try {
+            const eventData = JSON.parse(selectedEventData);
+            console.log('Selected event from detail page:', eventData);
+            
+            // Find the event in our loaded events
+            const event = allEvents.find(e => getObjectId(e._id) === eventData.id);
+            
+            if (event && timeline) {
+                // Filter to show events from this period
+                const periodId = getObjectId(event.periodId);
+                if (periodId) {
+                    // Select the period
+                    selectedPeriodId = periodId;
+                    
+                    // Update filter buttons
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.dataset.period === periodId) {
+                            btn.classList.add('active');
+                        }
+                    });
+                    
+                    // Filter events
+                    filterByPeriod(periodId);
+                }
+                
+                // Focus on the event after a short delay to ensure timeline is rendered
+                setTimeout(() => {
+                    focusOnEvent(event);
+                }, 500);
+            }
+            
+            // Clear the sessionStorage
+            sessionStorage.removeItem('selectedTimelineEvent');
+        } catch (error) {
+            console.error('Error parsing selected event:', error);
+        }
+    }
+}
+
+// Focus on a specific event in the timeline
+function focusOnEvent(event) {
+    if (!timeline || !event) return;
+    
+    const eventId = getObjectId(event._id);
+    
+    // Select the event in the timeline
+    timeline.setSelection(eventId);
+    
+    // Calculate the focus date
+    const startDate = parseEventDate(event.date);
+    
+    if (startDate && !isNaN(startDate.getTime())) {
+        // Calculate window around the event (± 5 years)
+        const fiveYears = 5 * 365 * 24 * 60 * 60 * 1000; // 5 years in milliseconds
+        const windowStart = new Date(startDate.getTime() - fiveYears);
+        const windowEnd = new Date(startDate.getTime() + fiveYears);
+        
+        // Set the timeline window to focus on this event
+        timeline.setWindow(windowStart, windowEnd, {
+            animation: {
+                duration: 1000,
+                easingFunction: 'easeInOutQuad'
+            }
+        });
+        
+        console.log('Focused on event:', event.title, 'at', startDate);
+        
+        // Show modal after focusing
+        setTimeout(() => {
+            showEventModal(event);
+        }, 1000);
     }
 }
 
@@ -505,7 +588,8 @@ function performSearch(query) {
             const eventId = item.dataset.eventId;
             const event = allEvents.find(e => getObjectId(e._id) === eventId);
             if (event) {
-                showEventModal(event);
+                // Focus on the event in timeline
+                focusOnEvent(event);
                 searchResults.classList.remove('active');
                 document.getElementById('searchInput').value = '';
             }
@@ -550,7 +634,7 @@ function showEventModal(event) {
         locationDiv.style.display = 'none';
     }
 
-    // Setup view detail button - always visible
+    // Setup view detail button
     const viewDetailBtn = document.getElementById('viewOnMap');
     viewDetailBtn.textContent = '📄 View Detail';
     viewDetailBtn.style.display = 'flex';
