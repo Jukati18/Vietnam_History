@@ -9,6 +9,44 @@ let filteredEvents = [];
 let selectedPeriodId = 'all';
 let currentSort = 'date-asc';
 
+// Available images in the images folder
+const AVAILABLE_IMAGES = [
+    'event1.png',
+    'event2.png',
+    'event3.png',
+    'event4.png',
+    'event5.png',
+    'event6.png',
+    'event7.png',
+    'event8.png',
+    'event9.png',
+    'event10.png',
+    'event11.png',
+    'event12.png',
+    'event13.png',
+    'event14.png',
+    'event15.png',
+    'event16.png',
+    'event17.png',
+    'event18.png',
+    'event19.png',
+    'event20.png'
+];
+
+// Fallback gradient colors if image fails to load
+const GRADIENT_FALLBACKS = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+];
+
 // Helper function to get ID from MongoDB object
 function getObjectId(obj) {
     if (!obj) return null;
@@ -19,6 +57,35 @@ function getObjectId(obj) {
         if (obj._id.$oid) return obj._id.$oid;
     }
     return String(obj);
+}
+
+// Simple hash function to convert string to number
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+}
+
+// Get consistent image for event based on event ID
+function getEventImage(event) {
+    const eventId = getObjectId(event._id);
+    
+    // Use hash of event ID to get consistent image index
+    const hash = hashString(eventId);
+    const imageIndex = hash % AVAILABLE_IMAGES.length;
+    
+    return `images/${AVAILABLE_IMAGES[imageIndex]}`;
+}
+
+// Get consistent fallback gradient based on event ID
+function getFallbackGradient(event) {
+    const eventId = getObjectId(event._id);
+    const hash = hashString(eventId);
+    return GRADIENT_FALLBACKS[hash % GRADIENT_FALLBACKS.length];
 }
 
 // Initialize on page load
@@ -166,10 +233,10 @@ function renderEvents() {
     console.log('Events rendered:', filteredEvents.length);
 }
 
-function createEventCard(event, index) {
+function createEventCard(event, displayIndex) {
     const card = document.createElement('div');
     card.className = 'event-card';
-    card.style.animationDelay = `${index * 0.1}s`;
+    card.style.animationDelay = `${displayIndex * 0.1}s`;
     
     const eventId = getObjectId(event._id);
     const periodId = getObjectId(event.periodId);
@@ -184,8 +251,16 @@ function createEventCard(event, index) {
     // Get description
     const description = event.shortDescription || event.description || 'No description available';
     
+    // Get CONSISTENT image for this specific event (based on event ID, not display index)
+    const imageUrl = getEventImage(event);
+    const fallbackGradient = getFallbackGradient(event);
+    
     card.innerHTML = `
-        <div class="card-image">
+        <div class="card-image" style="background: ${fallbackGradient};">
+            <img src="${imageUrl}" 
+                 alt="${event.title || 'Event'}" 
+                 class="card-image-img"
+                 onerror="this.style.display='none'">
             ${event.featured ? '<div class="card-badge">FEATURED</div>' : ''}
         </div>
         <div class="card-content">
@@ -475,7 +550,16 @@ window.eventsDebug = {
     get allPeriods() { return allPeriods; },
     get allEvents() { return allEvents; },
     get filteredEvents() { return filteredEvents; },
-    reloadData: loadAllData
+    reloadData: loadAllData,
+    // Test function to see image assignments
+    testImageAssignment: (eventId) => {
+        const event = allEvents.find(e => getObjectId(e._id) === eventId);
+        if (event) {
+            console.log('Event:', event.title);
+            console.log('Image:', getEventImage(event));
+            console.log('Gradient:', getFallbackGradient(event));
+        }
+    }
 };
 
 console.log('events.js loaded. Use eventsDebug in console for debugging.');
