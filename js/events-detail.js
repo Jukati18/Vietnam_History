@@ -176,9 +176,6 @@ function renderEventDetail() {
     // Render related events
     renderRelatedEvents();
 
-    // Show location map if coordinates available
-    showLocationMap();
-
     // Render tags if available
     renderTags();
 
@@ -251,16 +248,6 @@ function renderRelatedEvents() {
     section.style.display = 'block';
 }
 
-function showLocationMap() {
-    const mapBox = document.getElementById('locationMapBox');
-    
-    if (currentEvent.location?.coordinates?.lat && currentEvent.location?.coordinates?.lng) {
-        mapBox.style.display = 'block';
-    } else {
-        mapBox.style.display = 'none';
-    }
-}
-
 function renderTags() {
     const container = document.getElementById('eventTags');
     const box = document.getElementById('tagsBox');
@@ -310,8 +297,17 @@ function viewOnMap() {
     
     // Check if event has coordinates
     if (currentEvent.location?.coordinates?.lat && currentEvent.location?.coordinates?.lng) {
-        // Redirect to map with event selected
-        window.location.href = `map.html?event=${eventId}`;
+        // Store event data in sessionStorage to be picked up by map.html
+        sessionStorage.setItem('selectedEvent', JSON.stringify({
+            id: eventId,
+            lat: currentEvent.location.coordinates.lat,
+            lng: currentEvent.location.coordinates.lng,
+            title: currentEvent.title,
+            period: currentEvent.periodId
+        }));
+        
+        // Redirect to map
+        window.location.href = 'map.html';
     } else {
         alert('This event does not have location coordinates to display on the map.');
     }
@@ -322,8 +318,15 @@ function viewOnTimeline() {
 
     const eventId = getObjectId(currentEvent._id);
     
-    // Redirect to timeline with event highlighted
-    window.location.href = `timeline.html?event=${eventId}`;
+    // Store event data in sessionStorage to be picked up by timeline.html
+    sessionStorage.setItem('selectedTimelineEvent', JSON.stringify({
+        id: eventId,
+        year: currentEvent.date?.year,
+        period: currentEvent.periodId
+    }));
+    
+    // Redirect to timeline
+    window.location.href = 'timeline.html';
 }
 
 function shareEvent() {
