@@ -1,6 +1,6 @@
 // Vietnamese History Interactive Map with Leaflet & MongoDB Atlas
 // Configuration
-const API_URL = 'http://localhost:3000/api'; // Your backend URL
+const API_URL = 'http://localhost:3000/api';
 
 // Map State
 let map;
@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeMap();
     await loadAllData();
     initializeEventListeners();
+    
+    // Check if there's a selected event from detail page
+    checkForSelectedEvent();
 });
 
 // Initialize Leaflet Map
@@ -49,6 +52,84 @@ function initializeMap() {
     map.fitBounds(VIETNAM_BOUNDS);
 
     console.log('✅ Map initialized');
+}
+
+// Check for selected event from detail page
+function checkForSelectedEvent() {
+    const selectedEventData = sessionStorage.getItem('selectedEvent');
+    
+    if (selectedEventData) {
+        try {
+            const eventData = JSON.parse(selectedEventData);
+            console.log('Selected event from detail page:', eventData);
+            
+            // Find the event in our loaded events
+            const event = events.find(e => getObjectId(e._id) === eventData.id);
+            
+            if (event) {
+                // Show only this event
+                showSingleEvent(event);
+            }
+            
+            // Clear the sessionStorage
+            sessionStorage.removeItem('selectedEvent');
+        } catch (error) {
+            console.error('Error parsing selected event:', error);
+        }
+    }
+}
+
+// Show single event on map (from search or detail page)
+function showSingleEvent(event) {
+    const coords = getEventCoordinates(event);
+    
+    if (!coords) {
+        alert('This event does not have location coordinates.');
+        return;
+    }
+    
+    // Clear all existing markers
+    clearMarkers();
+    
+    // Get event details
+    const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
+    const color = period?.color || '#667eea';
+    
+    // Create custom icon
+    const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div class="marker-icon" style="background: ${color};">📍</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+    });
+    
+    // Create marker for this event only
+    const marker = L.marker([coords.lat, coords.lng], { icon })
+        .addTo(map)
+        .bindPopup(createPopupContent(event, period))
+        .openPopup(); // Automatically open popup
+    
+    markers.push(marker);
+    
+    // Zoom to this event (closer zoom level)
+    map.setView([coords.lat, coords.lng], 12);
+    
+    // Update annotations to show only this event
+    renderAnnotations([event]);
+    document.getElementById('visibleCount').textContent = '1';
+}
+
+// Helper function to get ID from MongoDB object
+function getObjectId(obj) {
+    if (!obj) return null;
+    if (typeof obj === 'string') return obj;
+    if (obj.$oid) return obj.$oid;
+    if (obj._id) {
+        if (typeof obj._id === 'string') return obj._id;
+        if (obj._id.$oid) return obj._id.$oid;
+    }
+    return String(obj);
 }
 
 // Load all data from MongoDB Atlas via backend API
@@ -446,53 +527,12 @@ function displaySearchResults(results) {
                 
                 // Show only this event on map
                 showSingleEvent(event);
-                
-                // Update annotations to show only this event
-                renderAnnotations([event]);
-                document.getElementById('visibleCount').textContent = '1';
             }
             
             resultsContainer.classList.remove('active');
             document.getElementById('searchInput').value = '';
         });
     });
-}
-
-// Show single event on map
-function showSingleEvent(event) {
-    const coords = getEventCoordinates(event);
-    
-    if (!coords) {
-        alert('This event does not have location coordinates.');
-        return;
-    }
-    
-    // Clear all existing markers
-    clearMarkers();
-    
-    // Get event details
-    const period = periods.find(p => (p._id.$oid || p._id) === (event.periodId?.$oid || event.periodId));
-    const color = period?.color || '#667eea';
-    
-    // Create custom icon
-    const icon = L.divIcon({
-        className: 'custom-marker',
-        html: `<div class="marker-icon" style="background: ${color};">📍</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-    });
-    
-    // Create marker for this event only
-    const marker = L.marker([coords.lat, coords.lng], { icon })
-        .addTo(map)
-        .bindPopup(createPopupContent(event, period))
-        .openPopup(); // Automatically open popup
-    
-    markers.push(marker);
-    
-    // Zoom to this event (closer zoom level)
-    map.setView([coords.lat, coords.lng], 12);
 }
 
 // View event details (placeholder)
