@@ -1,37 +1,249 @@
+// Vietnamese History Homepage - JavaScript
+// API Configuration
+const API_BASE_URL = 'http://localhost:3000/api';
+
+// Global state
+let allEvents = [];
+let allPeriods = [];
+
+// Helper function to get ID from MongoDB object
+function getObjectId(obj) {
+    if (!obj) return null;
+    if (typeof obj === 'string') return obj;
+    if (obj.$oid) return obj.$oid;
+    if (obj._id) {
+        if (typeof obj._id === 'string') return obj._id;
+        if (obj._id.$oid) return obj._id.$oid;
+    }
+    return String(obj);
+}
+
+// Shuffle array using Fisher-Yates algorithm
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Format event date
+function formatEventDate(dateObj) {
+    if (!dateObj || typeof dateObj.year !== 'number') {
+        return 'Unknown date';
+    }
+
+    const year = dateObj.year;
+    const absYear = Math.abs(year);
+    const era = year < 0 ? ' BC' : ' AD';
+
+    if (typeof dateObj.month === 'number' && typeof dateObj.day === 'number') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[dateObj.month]} ${dateObj.day}, ${absYear}${era}`;
+    } else if (typeof dateObj.month === 'number') {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+        return `${months[dateObj.month]} ${absYear}${era}`;
+    } else {
+        return `${absYear}${era}`;
+    }
+}
+
+// Available gradients for event cards
+const GRADIENT_COLORS = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+];
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Filter button interactions
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const eventCards = document.querySelectorAll('.event-card');
-    
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active class from all buttons
-            filterButtons.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Get the selected period
-            const period = this.dataset.period;
-            
-            // Filter event cards with animation
-            eventCards.forEach((card, index) => {
-                if (period === 'all' || card.dataset.period === period) {
-                    card.style.display = 'block';
-                    // Re-trigger animation with staggered delay
-                    card.style.animation = 'none';
-                    setTimeout(() => {
-                        card.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s backwards`;
-                    }, 10);
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+    console.log('Homepage loaded, fetching random events...');
+    loadRandomEvents();
+    initializeInteractivity();
+});
+
+// Load random events from API
+async function loadRandomEvents() {
+    try {
+        showLoading(true);
+
+        // Fetch periods and events in parallel
+        const [periodsData, eventsData] = await Promise.all([
+            fetchAPI('/periods'),
+            fetchAPI('/events')
+        ]);
+
+        allPeriods = Array.isArray(periodsData) ? periodsData : [];
+        allEvents = Array.isArray(eventsData) ? eventsData : [];
+
+        console.log('Data loaded:', {
+            periods: allPeriods.length,
+            events: allEvents.length
         });
+
+        // Update stats
+        updateStats();
+
+        // Get 4 random events
+        const randomEvents = getRandomEvents(allEvents, 4);
+        console.log('Selected random events:', randomEvents.length);
+
+        // Render the events
+        renderEvents(randomEvents);
+
+        showLoading(false);
+
+    } catch (error) {
+        console.error('Error loading events:', error);
+        showError('Failed to load events. Please check if the backend server is running.');
+        showLoading(false);
+    }
+}
+
+// Fetch data from API
+async function fetchAPI(endpoint) {
+    try {
+        console.log(`Fetching: ${API_BASE_URL}${endpoint}`);
+        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log(`Received ${endpoint}:`, data.length || 0, 'items');
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return [];
+    }
+}
+
+// Get random events from array
+function getRandomEvents(events, count) {
+    if (events.length <= count) {
+        return events;
+    }
+    
+    const shuffled = shuffleArray(events);
+    return shuffled.slice(0, count);
+}
+
+// Render events to the grid
+function renderEvents(events) {
+    const grid = document.getElementById('eventsGrid');
+    
+    if (!grid) {
+        console.error('Events grid not found!');
+        return;
+    }
+
+    if (events.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: 1 / -1;">No events available.</p>';
+        return;
+    }
+
+    grid.innerHTML = '';
+
+    events.forEach((event, index) => {
+        const eventCard = createEventCard(event, index);
+        grid.appendChild(eventCard);
     });
 
+    console.log('Rendered', events.length, 'events');
+}
+
+// Create event card element
+function createEventCard(event, index) {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    
+    const eventId = getObjectId(event._id);
+    const periodId = getObjectId(event.periodId);
+    const period = allPeriods.find(p => getObjectId(p._id) === periodId);
+    
+    // Get display date
+    const dateText = formatEventDate(event.date);
+    
+    // Get period name
+    const periodName = period ? period.name : 'Unknown Period';
+    
+    // Get description
+    const description = event.shortDescription || event.description || 'No description available';
+    
+    // Use a gradient based on index
+    const gradient = GRADIENT_COLORS[index % GRADIENT_COLORS.length];
+    
+    card.innerHTML = `
+        <div class="event-image" style="background: ${gradient};">
+            ${event.featured ? '<div class="event-badge">Featured</div>' : ''}
+        </div>
+        <div class="event-content">
+            <div class="event-period">${periodName}</div>
+            <h3 class="event-title">${event.title || 'Untitled Event'}</h3>
+            <p class="event-description">${description}</p>
+            <div class="event-meta">
+                <span class="event-date">📅 ${dateText}</span>
+                <a href="events-detail.html?id=${eventId}" class="event-link">Read More →</a>
+            </div>
+        </div>
+    `;
+    
+    // Add click handler to entire card
+    card.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('event-link')) {
+            window.location.href = `events-detail.html?id=${eventId}`;
+        }
+    });
+    
+    return card;
+}
+
+// Update statistics
+function updateStats() {
+    const totalEventsEl = document.getElementById('totalEvents');
+    if (totalEventsEl && allEvents.length > 0) {
+        totalEventsEl.textContent = allEvents.length;
+    }
+}
+
+// Show/hide loading indicator
+function showLoading(show) {
+    const loader = document.getElementById('loadingIndicator');
+    if (loader) {
+        if (show) {
+            loader.classList.remove('hidden');
+        } else {
+            loader.classList.add('hidden');
+        }
+    }
+}
+
+// Show error message
+function showError(message) {
+    const grid = document.getElementById('eventsGrid');
+    if (grid) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
+                <p style="color: #ef4444; font-size: 1.1rem; margin-bottom: 0.5rem;">⚠️ ${message}</p>
+                <p style="color: #64748b; font-size: 0.9rem;">Make sure your backend server is running on port 3000</p>
+            </div>
+        `;
+    }
+}
+
+// Initialize interactive features
+function initializeInteractivity() {
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
@@ -46,19 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced hover effect for event cards
-    eventCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-
     // Add ripple effect to buttons
-    const buttons = document.querySelectorAll('.btn, .filter-btn');
+    const buttons = document.querySelectorAll('.btn');
     buttons.forEach(button => {
         button.addEventListener('click', function(e) {
             const ripple = document.createElement('span');
@@ -121,73 +322,35 @@ document.addEventListener('DOMContentLoaded', function() {
         statsObserver.observe(statsSection);
     }
 
-    function animateValue(element) {
-        const text = element.textContent;
-        const hasPlus = text.includes('+');
-        const number = parseInt(text.replace(/\D/g, ''));
-        const duration = 2000;
-        const increment = number / (duration / 16);
-        let current = 0;
-
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= number) {
-                element.textContent = number + (hasPlus ? '+' : '');
-                clearInterval(timer);
-            } else {
-                element.textContent = Math.floor(current) + (hasPlus ? '+' : '');
-            }
-        }, 16);
-    }
-
-    // Add loading state to event cards
-    eventCards.forEach(card => {
-        const eventLink = card.querySelector('.event-link');
-        if (eventLink) {
-            eventLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                this.innerHTML = 'Loading... ⏳';
-                
-                // Simulate loading - replace with actual navigation
-                setTimeout(() => {
-                    this.innerHTML = 'Read More →';
-                    // window.location.href = this.getAttribute('href');
-                }, 500);
-            });
-        }
-    });
-
-    // Log active period for debugging
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            console.log('Active Period:', this.dataset.period);
-        });
-    });
-
-    // Add keyboard navigation for filter buttons
-    filterButtons.forEach((btn, index) => {
-        btn.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                const nextBtn = filterButtons[index + 1] || filterButtons[0];
-                nextBtn.focus();
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                const prevBtn = filterButtons[index - 1] || filterButtons[filterButtons.length - 1];
-                prevBtn.focus();
-            } else if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.click();
-            }
-        });
-    });
-
     // Console welcome message
     console.log('%c🇻🇳 Vietnamese History Project', 'color: #da251d; font-size: 20px; font-weight: bold;');
     console.log('%cExploring 4000+ years of Vietnamese history', 'color: #64748b; font-size: 14px;');
-});
+}
 
-// CSS for ripple effect (to be added via JavaScript)
+// Animate stat numbers
+function animateValue(element) {
+    const text = element.textContent;
+    const hasPlus = text.includes('+');
+    const number = parseInt(text.replace(/\D/g, ''));
+    
+    if (isNaN(number) || number === 0) return;
+    
+    const duration = 2000;
+    const increment = number / (duration / 16);
+    let current = 0;
+
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= number) {
+            element.textContent = number + (hasPlus ? '+' : '');
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(current) + (hasPlus ? '+' : '');
+        }
+    }, 16);
+}
+
+// CSS for ripple effect
 const style = document.createElement('style');
 style.textContent = `
     .ripple {
