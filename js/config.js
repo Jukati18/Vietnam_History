@@ -12,7 +12,7 @@ const config = {
       return 'http://localhost:3000/api';
     } else {
       // Production - replace with your Render URL after deployment
-      return 'https://your-render-app.onrender.com/api';
+      return 'https://viet-nam-history.onrender.com';
     }
   }
 };
