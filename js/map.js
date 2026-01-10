@@ -140,21 +140,22 @@ async function loadAllData() {
     try {
         loadingIndicator.classList.remove('hidden');
         
+        // FIXED: Changed API_URL to API_BASE_URL (matches config.js export)
         // Load periods
-        const periodsResponse = await fetch(`${API_URL}/periods`);
+        const periodsResponse = await fetch(`${API_BASE_URL}/periods`);
         if (periodsResponse.ok) {
             periods = await periodsResponse.json();
             renderMainPeriods();
         }
         
         // Load subPeriods
-        const subPeriodsResponse = await fetch(`${API_URL}/subperiods`);
+        const subPeriodsResponse = await fetch(`${API_BASE_URL}/subperiods`);
         if (subPeriodsResponse.ok) {
             subPeriods = await subPeriodsResponse.json();
         }
         
         // Load all events
-        const eventsResponse = await fetch(`${API_URL}/events`);
+        const eventsResponse = await fetch(`${API_BASE_URL}/events`);
         if (eventsResponse.ok) {
             events = await eventsResponse.json();
             console.log(`✅ Loaded ${events.length} events from database`);
