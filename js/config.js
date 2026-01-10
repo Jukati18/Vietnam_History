@@ -12,7 +12,7 @@ const config = {
       return 'http://localhost:3000/api';
     } else {
       // Production - replace with your Render URL after deployment
-      return 'https://vietnamese-history-api-dvwf.onrender.com'
+      return 'https://vietnamese-history-api-dvwf.onrender.com/api'
     }
   }
 };
