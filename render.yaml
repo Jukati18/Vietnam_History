@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: vietnamese-history-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # Managed in Render Dashboard
+    healthCheckPath: /api/health
+    autoDeploy: true

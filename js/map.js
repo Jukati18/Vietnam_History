@@ -1,6 +1,7 @@
 // Vietnamese History Interactive Map with Leaflet & MongoDB Atlas
-// Configuration
-const API_URL = 'http://localhost:3000/api';
+// API_BASE_URL is now defined in config.js
+// It automatically detects local vs production
+// Make sure config.js is loaded first in HTML
 
 // Map State
 let map;

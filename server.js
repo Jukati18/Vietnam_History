@@ -8,8 +8,20 @@ const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS Configuration - Updated for production
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+        ? [
+            'https://your-vercel-app.vercel.app', // Replace with your Vercel domain
+            'https://your-custom-domain.com' // Add custom domain if you have one
+          ]
+        : '*', // Allow all origins in development
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB Atlas Configuration
@@ -35,16 +47,6 @@ async function connectToDatabase() {
         periodsCollection = db.collection('periods');
         subPeriodsCollection = db.collection('subPeriods');
         eventsCollection = db.collection('events');
-        
-        /*
-        // Create indexes
-        await eventsCollection.createIndex({ title: 'text', description: 'text' });
-        await eventsCollection.createIndex({ periodId: 1 });
-        await eventsCollection.createIndex({ 'date.year': 1 });
-        await eventsCollection.createIndex({ 'location.coordinates': '2dsphere' });
-        
-        console.log('✅ Database indexes created');
-        */
        
         // Check if collections have data
         const periodsCount = await periodsCollection.countDocuments();
@@ -81,6 +83,7 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
         database: db ? 'Connected' : 'Disconnected',
+        environment: process.env.NODE_ENV || 'development',
         timestamp: new Date().toISOString()
     });
 });
@@ -349,9 +352,9 @@ app.get('/api/stats', async (req, res) => {
 async function startServer() {
     await connectToDatabase();
     
-    app.listen(PORT, () => {
-        console.log(`\n🚀 Server running on http://localhost:${PORT}`);
-        console.log(`📍 API available at http://localhost:${PORT}/api`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`\n🚀 Server running on port ${PORT}`);
+        console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
         console.log(`\n📚 Available endpoints:`);
         console.log(`   GET    /api/health`);
         console.log(`   GET    /api/periods`);
@@ -372,6 +375,11 @@ async function startServer() {
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
+    console.log('\n🛑 Shutting down server...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
     console.log('\n🛑 Shutting down server...');
     process.exit(0);
 });

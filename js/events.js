@@ -1,6 +1,7 @@
 // Vietnamese History Events Page - JavaScript
-// API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+// API_BASE_URL is now defined in config.js
+// It automatically detects local vs production
+// Make sure config.js is loaded first in HTML
 
 // Global State
 let allPeriods = [];
