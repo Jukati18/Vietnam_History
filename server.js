@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-// Vietnamese History Map - Backend Server with MongoDB Atlas
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -8,22 +7,22 @@ const { MongoClient, ObjectId } = require('mongodb');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS Configuration - Updated for production
+// CORS Configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
         ? [
-            'https://vietnam-history-mu.vercel.app'
+            'https://vietnam-history-mu.vercel.app',
+            'https://vietnam-history-mu.vercel.app/'
           ]
-        : '*', // Allow all origins in development
+        : '*',
     credentials: true,
     optionsSuccessStatus: 200
 };
 
-// Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB Atlas Configuration
+// MongoDB Configuration
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'vietnamese_history';
 
@@ -32,13 +31,11 @@ let periodsCollection;
 let subPeriodsCollection;
 let eventsCollection;
 
-// Connect to MongoDB Atlas
+// Connect to MongoDB
 async function connectToDatabase() {
     try {
         console.log('🔄 Connecting to MongoDB Atlas...');
-
         const client = new MongoClient(MONGODB_URI);
-        
         await client.connect();
         console.log('✅ Connected to MongoDB Atlas');
 
@@ -47,7 +44,6 @@ async function connectToDatabase() {
         subPeriodsCollection = db.collection('subPeriods');
         eventsCollection = db.collection('events');
        
-        // Check if collections have data
         const periodsCount = await periodsCollection.countDocuments();
         const subPeriodsCount = await subPeriodsCollection.countDocuments();
         const eventsCount = await eventsCollection.countDocuments();
@@ -57,21 +53,30 @@ async function connectToDatabase() {
         console.log(`   - Sub-periods: ${subPeriodsCount}`);
         console.log(`   - Events: ${eventsCount}`);
         
-        if (periodsCount === 0 || subPeriodsCount === 0 || eventsCount === 0) {
-            console.log('⚠️  Database is empty. Please import your data.');
-            console.log('📝 Use the import script or MongoDB Compass to add data.');
-        }
-        
     } catch (error) {
-        console.error('❌ MongoDB Atlas connection error:', error.message);
-        console.log('\n💡 Troubleshooting tips:');
-        console.log('   1. Check your MONGODB_URI connection string');
-        console.log('   2. Ensure your IP is whitelisted in MongoDB Atlas');
-        console.log('   3. Verify your username and password are correct');
-        console.log('   4. Check your network connection\n');
+        console.error('❌ MongoDB connection error:', error.message);
         process.exit(1);
     }
 }
+
+// ============================================
+// ROOT ROUTE (Important for Render!)
+// ============================================
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Vietnamese History API',
+        status: 'Running',
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/health',
+            periods: '/api/periods',
+            subperiods: '/api/subperiods',
+            events: '/api/events',
+            stats: '/api/stats'
+        },
+        documentation: 'See /api/health for system status'
+    });
+});
 
 // ============================================
 // API ROUTES
@@ -224,101 +229,6 @@ app.get('/api/events/range', async (req, res) => {
     }
 });
 
-// Get events near location (geospatial query)
-app.get('/api/events/near', async (req, res) => {
-    try {
-        const lat = parseFloat(req.query.lat);
-        const lng = parseFloat(req.query.lng);
-        const maxDistance = parseInt(req.query.distance) || 100000; // meters
-        
-        if (isNaN(lat) || isNaN(lng)) {
-            return res.status(400).json({ error: 'Valid latitude and longitude required' });
-        }
-        
-        const events = await eventsCollection.find({
-            'location.coordinates': {
-                $near: {
-                    $geometry: {
-                        type: 'Point',
-                        coordinates: [lng, lat]
-                    },
-                    $maxDistance: maxDistance
-                }
-            }
-        }).toArray();
-        
-        res.json(events);
-    } catch (error) {
-        console.error('Error fetching nearby events:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Create new event (admin)
-app.post('/api/events', async (req, res) => {
-    try {
-        const eventData = req.body;
-        
-        if (!eventData.title || !eventData.periodId || !eventData.date) {
-            return res.status(400).json({ 
-                error: 'Title, periodId, and date are required' 
-            });
-        }
-        
-        const result = await eventsCollection.insertOne(eventData);
-        
-        res.status(201).json({
-            _id: result.insertedId,
-            ...eventData
-        });
-    } catch (error) {
-        console.error('Error creating event:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update event (admin)
-app.put('/api/events/:id', async (req, res) => {
-    try {
-        const eventId = req.params.id;
-        const updateData = req.body;
-        
-        const result = await eventsCollection.updateOne(
-            { _id: new ObjectId(eventId) },
-            { $set: updateData }
-        );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ error: 'Event not found' });
-        }
-        
-        res.json({ message: 'Event updated successfully' });
-    } catch (error) {
-        console.error('Error updating event:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Delete event (admin)
-app.delete('/api/events/:id', async (req, res) => {
-    try {
-        const eventId = req.params.id;
-        
-        const result = await eventsCollection.deleteOne({ 
-            _id: new ObjectId(eventId) 
-        });
-        
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ error: 'Event not found' });
-        }
-        
-        res.json({ message: 'Event deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting event:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Get statistics
 app.get('/api/stats', async (req, res) => {
     try {
@@ -347,6 +257,22 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// 404 handler for undefined routes
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Not Found',
+        message: `Route ${req.method} ${req.path} not found`,
+        availableEndpoints: [
+            'GET /',
+            'GET /api/health',
+            'GET /api/periods',
+            'GET /api/subperiods',
+            'GET /api/events',
+            'GET /api/stats'
+        ]
+    });
+});
+
 // Start server
 async function startServer() {
     await connectToDatabase();
@@ -354,25 +280,13 @@ async function startServer() {
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`\n🚀 Server running on port ${PORT}`);
         console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`\n📚 Available endpoints:`);
-        console.log(`   GET    /api/health`);
-        console.log(`   GET    /api/periods`);
-        console.log(`   GET    /api/subperiods`);
-        console.log(`   GET    /api/events`);
-        console.log(`   GET    /api/events/:id`);
-        console.log(`   GET    /api/events/search?q=query`);
-        console.log(`   GET    /api/events/period/:periodId`);
-        console.log(`   GET    /api/events/subperiod/:subPeriodId`);
-        console.log(`   GET    /api/events/range?start=year&end=year`);
-        console.log(`   GET    /api/events/near?lat=x&lng=y&distance=m`);
-        console.log(`   POST   /api/events`);
-        console.log(`   PUT    /api/events/:id`);
-        console.log(`   DELETE /api/events/:id`);
-        console.log(`   GET    /api/stats\n`);
+        console.log(`\n✅ API is ready!`);
+        console.log(`   Root: http://localhost:${PORT}/`);
+        console.log(`   Health: http://localhost:${PORT}/api/health`);
     });
 }
 
-// Handle graceful shutdown
+// Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down server...');
     process.exit(0);
@@ -383,5 +297,4 @@ process.on('SIGTERM', async () => {
     process.exit(0);
 });
 
-// Start the server
 startServer();
