@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
         ? [
-            'https://your-vercel-app.vercel.app', // Replace with your Vercel domain
-            'https://your-custom-domain.com' // Add custom domain if you have one
+            'https://vietnam-history-navy.vercel.app',
+            'https://vietnam-history-git-subbranch02-jukatis-projects.vercel.app'
           ]
         : '*', // Allow all origins in development
     credentials: true,
