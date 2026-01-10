@@ -12,8 +12,7 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
         ? [
-            'https://vietnam-history-navy.vercel.app',
-            'https://vietnam-history-git-subbranch02-jukatis-projects.vercel.app'
+            'https://vietnam-history-mu.vercel.app'
           ]
         : '*', // Allow all origins in development
     credentials: true,
