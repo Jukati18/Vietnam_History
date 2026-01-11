@@ -3,8 +3,16 @@
 An interactive web application that brings 4,000+ years of Vietnamese history to life through interactive maps, timelines, and detailed historical narratives.
 
 ![Vietnamese History](https://img.shields.io/badge/History-4000%2B%20Years-red)
-![MongoDB](https://img.shields.io/badge/Database-MongoDB%20Atlas-green)
+![MongoDB Atlas](https://img.shields.io/badge/Database-MongoDB%20Atlas-green)
+![Vercel](https://img.shields.io/badge/Frontend-Vercel-black)
+![Render](https://img.shields.io/badge/Backend-Render-blue)
 ![License](https://img.shields.io/badge/License-Educational-blue)
+
+## 🌐 Live Demo
+
+**Frontend (Vercel):** https://vietnam-history-sage.vercel.app
+
+**Backend API (Render):** https://vietnamese-history-api-dvwf.onrender.com
 
 ## 📖 Overview
 
@@ -47,15 +55,88 @@ The Vietnamese History project addresses the challenge of making Vietnamese hist
 - Location and date information
 - Share functionality
 
+## 🚀 Architecture
+
+### Frontend (Vercel)
+- **Platform**: Vercel (Static Site Hosting)
+- **URL**: https://vietnam-history-sage.vercel.app
+- **Technologies**: HTML5, CSS3, JavaScript ES6+
+- **Libraries**: Leaflet.js, Vis.js Timeline
+
+### Backend API (Render)
+- **Platform**: Render (Node.js Web Service)
+- **URL**: https://vietnamese-history-api-dvwf.onrender.com
+- **Technologies**: Node.js, Express.js
+- **Features**: RESTful API, CORS enabled
+
+### Database (MongoDB Atlas)
+- **Platform**: MongoDB Atlas (Cloud Database)
+- **Tier**: Free M0 Sandbox
+- **Collections**: periods, subPeriods, events
+- **Features**: Geospatial queries, text search
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **HTML5 & CSS3**: Modern semantic markup and styling
+- **JavaScript ES6+**: Vanilla JavaScript for interactivity
+- **Leaflet.js**: Interactive map visualization
+- **Vis.js**: Timeline visualization library
+- **Vercel**: Static site hosting and deployment
+
+### Backend
+- **Node.js**: JavaScript runtime
+- **Express.js**: Web application framework
+- **MongoDB Atlas**: Cloud database service
+- **Render**: Backend API hosting
+- **CORS**: Cross-origin resource sharing
+
+### Libraries & Tools
+- **Leaflet.js v1.9.4**: Map rendering
+- **Vis.js v4.21.0**: Timeline component
+- **MongoDB Driver**: Database connectivity
+
+## 📁 Project Structure
+
+```
+Vietnam_History/
+├── css/                      # Stylesheets
+│   ├── style.css            # Homepage styles
+│   ├── map.css              # Map page styles
+│   ├── timeline.css         # Timeline page styles
+│   ├── events.css           # Events list styles
+│   └── events-detail.css    # Event detail styles
+├── js/                       # JavaScript files
+│   ├── config.js            # API configuration (auto-detects environment)
+│   ├── script.js            # Homepage logic
+│   ├── map.js               # Map functionality
+│   ├── timeline.js          # Timeline functionality
+│   ├── events.js            # Events list logic
+│   └── events-detail.js     # Event detail logic
+├── images/                   # Event images
+├── docs/                     # Documentation
+│   ├── API.md               # API documentation
+│   ├── USER_GUIDE.md        # User guide
+│   ├── DEPLOYMENT.md        # Deployment guide
+│   └── DATABASE_SCHEMA.md   # Database schema
+├── server.js                 # Express server (deployed on Render)
+├── package.json              # Dependencies
+├── vercel.json              # Vercel configuration
+├── render.yaml              # Render configuration
+├── .env.example             # Environment variables template
+└── README.md                # This file
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB Atlas account
-- Modern web browser
+- Node.js (v14 or higher) - for local development only
+- MongoDB Atlas account (for database)
+- Vercel account (for frontend deployment)
+- Render account (for backend deployment)
 
-### Installation
+### Local Development
 
 1. **Clone the repository**
 ```bash
@@ -76,71 +157,35 @@ cp .env.example .env
 # Edit .env with your MongoDB Atlas connection string
 MONGODB_URI=your_mongodb_atlas_connection_string
 PORT=3000
+NODE_ENV=development
 ```
 
-4. **Start the server**
+4. **Start the backend server**
 ```bash
 node server.js
 ```
 
-5. **Open in browser**
+5. **Open frontend**
 ```
-http://localhost:3000
+# Open index.html in your browser or use a local server
+# The frontend will automatically connect to localhost:3000
 ```
 
-## 🛠️ Technology Stack
+### Production Deployment
 
-### Frontend
-- **HTML5 & CSS3**: Modern semantic markup and styling
-- **JavaScript ES6+**: Vanilla JavaScript for interactivity
-- **Leaflet.js**: Interactive map visualization
-- **Vis.js**: Timeline visualization library
+The project is already configured for deployment:
 
-### Backend
-- **Node.js**: JavaScript runtime
-- **Express.js**: Web application framework
-- **MongoDB Atlas**: Cloud database service
-- **dotenv**: Environment variable management
+- **Frontend**: Automatically deploys to Vercel on push to main branch
+- **Backend**: Automatically deploys to Render on push to main branch
+- **Database**: Already hosted on MongoDB Atlas
 
-### Libraries & Tools
-- **Leaflet.js v1.9.4**: Map rendering
-- **Vis.js v4.21.0**: Timeline component
-- **CORS**: Cross-origin resource sharing
-- **MongoDB Driver**: Database connectivity
-
-## 📁 Project Structure
-
-```
-Vietnam_History/
-├── css/                      # Stylesheets
-│   ├── style.css            # Homepage styles
-│   ├── map.css              # Map page styles
-│   ├── timeline.css         # Timeline page styles
-│   ├── events.css           # Events list styles
-│   └── events-detail.css    # Event detail styles
-├── js/                       # JavaScript files
-│   ├── script.js            # Homepage logic
-│   ├── map.js               # Map functionality
-│   ├── timeline.js          # Timeline functionality
-│   ├── events.js            # Events list logic
-│   └── events-detail.js     # Event detail logic
-├── images/                   # Event images
-├── docs/                     # Documentation
-│   ├── API.md               # API documentation
-│   ├── USER_GUIDE.md        # User guide
-│   ├── SETUP.md             # Setup instructions
-│   └── DATABASE_SCHEMA.md   # Database schema
-├── server.js                 # Express server
-├── package.json              # Dependencies
-├── .env                      # Environment variables
-└── README.md                 # This file
-```
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
 
 ## 📚 Documentation
 
 - **[API Documentation](docs/API.md)** - Complete API endpoint reference
 - **[User Guide](docs/USER_GUIDE.md)** - How to use the platform
-- **[Setup Guide](docs/SETUP.md)** - Detailed installation instructions
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - How to deploy the application
 - **[Database Schema](docs/DATABASE_SCHEMA.md)** - Database structure and models
 
 ## 🎯 Key Historical Periods
@@ -182,6 +227,21 @@ Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) for details on our code of c
 
 This project is licensed for educational purposes. All historical content is provided for learning and research.
 
+## 🌟 Deployment Status
+
+- ✅ **Frontend**: Deployed on Vercel
+- ✅ **Backend API**: Deployed on Render
+- ✅ **Database**: Hosted on MongoDB Atlas
+- ✅ **CORS**: Configured for cross-origin requests
+- ✅ **SSL**: HTTPS enabled on all services
+
+## 🔗 Important URLs
+
+- **Live Site**: https://vietnam-history-sage.vercel.app
+- **API Base URL**: https://vietnamese-history-api-dvwf.onrender.com/api
+- **API Health Check**: https://vietnamese-history-api-dvwf.onrender.com/api/health
+- **GitHub Repository**: [Your Repository URL]
+
 ## 👥 Team
 
 - **Development Team**: Software engineering and architecture
@@ -194,6 +254,8 @@ This project is licensed for educational purposes. All historical content is pro
 - Vietnamese historians and educators for their invaluable expertise
 - Open-source community for amazing tools and libraries
 - MongoDB Atlas for cloud database hosting
+- Vercel for frontend hosting
+- Render for backend API hosting
 - Leaflet.js and Vis.js communities
 - All contributors and supporters of this project
 
@@ -217,3 +279,5 @@ If you find this project helpful, please consider:
 **Made with ❤️ for education and cultural preservation**
 
 *Preserving 4,000 years of Vietnamese heritage through technology*
+
+**Live at**: https://vietnam-history-sage.vercel.app

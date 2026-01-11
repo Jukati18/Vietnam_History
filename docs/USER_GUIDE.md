@@ -2,6 +2,17 @@
 
 Welcome to the Vietnamese History Interactive Platform! This guide will help you explore 4,000+ years of Vietnamese history through our interactive features.
 
+## 🌐 Accessing the Platform
+
+**Live Site**: https://vietnam-history-sage.vercel.app
+
+The platform works best on:
+- 💻 Desktop browsers (Chrome, Firefox, Safari, Edge)
+- 📱 Mobile devices (iOS Safari, Android Chrome)
+- 📟 Tablets
+
+**Note**: No installation required! Just visit the website and start exploring.
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
@@ -20,15 +31,15 @@ Welcome to the Vietnamese History Interactive Platform! This guide will help you
 
 ### Accessing the Platform
 
-Open your web browser and navigate to:
+Simply open your web browser and navigate to:
 ```
-http://localhost:3000
+https://vietnam-history-sage.vercel.app
 ```
 
-The platform works best on:
-- 💻 Desktop browsers (Chrome, Firefox, Safari, Edge)
-- 📱 Mobile devices (iOS Safari, Android Chrome)
-- 📟 Tablets
+**First Time Loading**:
+- The backend API may take 30-60 seconds to wake up on first visit
+- Subsequent page loads will be fast
+- You'll see a loading indicator while data loads
 
 ### Navigation Bar
 
@@ -44,6 +55,8 @@ The navigation bar is available on every page:
 ---
 
 ## Homepage
+
+**URL**: https://vietnam-history-sage.vercel.app/index.html
 
 ### Overview
 
@@ -72,9 +85,13 @@ View quick facts:
 - Number of historical periods
 - Number of locations
 
+**Note**: First visit may take 30-60 seconds to load as the backend API wakes up.
+
 ---
 
 ## Interactive Map
+
+**URL**: https://vietnam-history-sage.vercel.app/map.html
 
 ### Opening the Map
 
@@ -100,7 +117,7 @@ Click any period button in the first row:
 - Indochina Wars
 - Modern Vietnam
 
-**Result:** The map updates to show only events from that period, and sub-period buttons appear.
+**Result**: The map updates to show only events from that period, and sub-period buttons appear.
 
 #### Step 2: Select Sub-Period (Optional)
 After selecting a main period, sub-period buttons appear in the second row. Click any sub-period to further filter events.
@@ -152,6 +169,8 @@ Below the map, you'll see a list of all visible events showing:
 ---
 
 ## Timeline View
+
+**URL**: https://vietnam-history-sage.vercel.app/timeline.html
 
 ### Opening the Timeline
 
@@ -228,6 +247,8 @@ Below the timeline, the legend shows:
 
 ## Events Browser
 
+**URL**: https://vietnam-history-sage.vercel.app/events.html
+
 ### Opening Events Browser
 
 Click **"Events"** in the navigation bar.
@@ -259,7 +280,7 @@ Use the **"Sort by"** dropdown to change order:
 ### Event Cards
 
 Each event card displays:
-- **Image** - Visual representation (gradient or image)
+- **Image** - Visual representation (consistent per event)
 - **Period Badge** - Historical period tag
 - **Title** - Event name (English)
 - **Vietnamese Title** - Event name in Vietnamese (if available)
@@ -280,6 +301,8 @@ You'll be taken to the Event Detail page.
 ---
 
 ## Event Details
+
+**URL**: https://vietnam-history-sage.vercel.app/events-detail.html?id=...
 
 ### Accessing Event Details
 
@@ -399,13 +422,6 @@ Each result shows:
 
 ## Navigation Tips
 
-### Keyboard Shortcuts
-
-While no specific keyboard shortcuts are implemented, standard browser shortcuts work:
-- **Ctrl/Cmd + F** - Browser find (search current page)
-- **Backspace/Alt + ←** - Browser back button
-- **Alt + →** - Browser forward button
-
 ### Best Practices
 
 #### For Exploring by Geography:
@@ -452,79 +468,93 @@ While no specific keyboard shortcuts are implemented, standard browser shortcuts
 
 ## Troubleshooting
 
+### Performance Issues
+
+**Problem:** Slow initial loading (30-60 seconds)
+- **Cause:** Backend API waking up (Render free tier)
+- **Solution:** Wait for initial load, subsequent loads will be fast
+- **Status:** Normal behavior for first visit
+
+**Problem:** Page not loading
+- **Solution:** 
+  - Check internet connection
+  - Refresh the page (F5 or Cmd+R)
+  - Clear browser cache
+  - Try different browser
+
 ### Map Issues
 
 **Problem:** Map not loading
-- **Solution:** Refresh the page (F5 or Cmd+R)
-- Check internet connection
-- Make sure server is running
+- **Solution:** 
+  - Refresh the page
+  - Check internet connection
+  - Ensure JavaScript is enabled
 
 **Problem:** Markers not appearing
-- **Solution:** Select a period filter
-- Check that events exist for selected period
+- **Solution:** 
+  - Select a period filter
+  - Check that events exist for selected period
 
 **Problem:** Map controls not responding
-- **Solution:** Wait for map to fully load
-- Try refreshing the page
+- **Solution:** 
+  - Wait for map to fully load
+  - Refresh the page
 
 ### Timeline Issues
 
 **Problem:** Timeline is blank
-- **Solution:** Make sure events exist in database
-- Try resetting the view with "Reset" button
-- Refresh the page
+- **Solution:** 
+  - Ensure events exist in database
+  - Try "Reset" button
+  - Refresh the page
 
 **Problem:** Can't zoom or pan
-- **Solution:** Click directly on timeline area
-- Make sure page is fully loaded
-- Try different browser if issues persist
+- **Solution:** 
+  - Click directly on timeline area
+  - Ensure page is fully loaded
 
 **Problem:** Events not showing details
-- **Solution:** Click directly on event item
-- Wait for page to fully load
-- Check browser console for errors
+- **Solution:** 
+  - Click directly on event item
+  - Wait for page to fully load
 
 ### Search Issues
 
 **Problem:** Search not working
-- **Solution:** Type at least 2 characters
-- Check spelling
-- Try different keywords
-- Make sure server is running
+- **Solution:** 
+  - Type at least 2 characters
+  - Check spelling
+  - Try different keywords
 
 **Problem:** No results found
-- **Solution:** Try broader search terms
-- Check that database has events
-- Try searching in Vietnamese if applicable
+- **Solution:** 
+  - Try broader search terms
+  - Check that database has events
+  - Try searching in Vietnamese if applicable
 
 ### General Issues
 
-**Problem:** Page not loading
-- **Solution:** Make sure backend server is running
-- Check that you're accessing correct URL
-- Clear browser cache
-- Try different browser
+**Problem:** Images not loading
+- **Solution:** 
+  - Check internet connection
+  - Clear browser cache
+  - Images will show gradient backgrounds as fallback
 
-**Problem:** Slow performance
-- **Solution:** Close other browser tabs
-- Try filtering to reduce displayed events
-- Check internet connection speed
-
-**Problem:** Mobile display issues
-- **Solution:** Rotate device to landscape
-- Zoom out browser view
-- Try on desktop for full experience
+**Problem:** API errors (events not loading)
+- **Cause:** Backend API might be starting up
+- **Solution:** 
+  - Wait 30-60 seconds
+  - Refresh the page
+  - Check https://vietnamese-history-api-dvwf.onrender.com/api/health
 
 ### Getting Help
 
 If you continue to experience issues:
 
-1. **Check server console** - Look for error messages
-2. **Check browser console** - Press F12, look for errors
-3. **Try different browser** - Test in Chrome, Firefox, or Safari
-4. **Restart server** - Stop and restart backend server
-5. **Clear cache** - Clear browser cache and cookies
-6. **Report issue** - Contact support or file GitHub issue
+1. **Check Status**: Visit https://vietnamese-history-api-dvwf.onrender.com/api/health
+2. **Check Console**: Press F12, look for errors in Console tab
+3. **Try Different Device**: Test on another device/browser
+4. **Report Issue**: Contact support or file GitHub issue
 
 ---
 
@@ -548,6 +578,25 @@ If you continue to experience issues:
 
 ---
 
+## Performance Notes
+
+### Expected Load Times
+
+- **Homepage**: 1-3 seconds (after initial wake-up)
+- **Map Page**: 2-4 seconds (including marker rendering)
+- **Timeline Page**: 2-4 seconds (including event rendering)
+- **Events Page**: 2-4 seconds (including image loading)
+- **Event Details**: 1-2 seconds
+
+### First Visit
+
+The backend API (hosted on Render free tier) "sleeps" after 15 minutes of inactivity:
+- **First visit**: 30-60 seconds initial load
+- **Subsequent visits**: Fast (~1-3 seconds)
+- **Solution**: Be patient on first load, then enjoy fast performance!
+
+---
+
 ## Feedback
 
 We welcome your feedback! If you have:
@@ -556,10 +605,25 @@ We welcome your feedback! If you have:
 - Content corrections
 - Feature requests
 
-Please contact us or file an issue on GitHub.
+Please contact us:
+- **GitHub Issues**: [Report an issue](https://github.com/yourusername/Vietnam_History/issues)
+- **Email**: contact@vietnamesehistory.edu.vn
+
+---
+
+## Keyboard Shortcuts
+
+While no specific keyboard shortcuts are implemented, standard browser shortcuts work:
+- **Ctrl/Cmd + F** - Browser find (search current page)
+- **Backspace/Alt + ←** - Browser back button
+- **Alt + →** - Browser forward button
+- **F5/Cmd + R** - Refresh page
+- **Ctrl/Cmd + 0** - Reset zoom level
 
 ---
 
 **Happy exploring! 🇻🇳**
 
 *Discover 4,000 years of Vietnamese history through interactive visualization*
+
+**Live at**: https://vietnam-history-sage.vercel.app

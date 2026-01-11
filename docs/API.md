@@ -2,20 +2,75 @@
 
 Complete reference for the Vietnamese History API endpoints.
 
-## Base URL
+## Base URLs
 
+### Production (Recommended)
+```
+https://vietnamese-history-api-dvwf.onrender.com/api
+```
+
+### Local Development
 ```
 http://localhost:3000/api
 ```
 
+## 🌐 Live API
+
+The API is currently deployed on **Render** and accessible at:
+- **API Root**: https://vietnamese-history-api-dvwf.onrender.com
+- **API Base**: https://vietnamese-history-api-dvwf.onrender.com/api
+- **Health Check**: https://vietnamese-history-api-dvwf.onrender.com/api/health
+
 ## Table of Contents
 
+- [Authentication](#authentication)
+- [Root Endpoint](#root-endpoint)
 - [Health Check](#health-check)
 - [Periods](#periods)
 - [Sub-Periods](#sub-periods)
 - [Events](#events)
 - [Search](#search)
 - [Statistics](#statistics)
+- [Error Handling](#error-handling)
+- [Rate Limiting](#rate-limiting)
+
+---
+
+## Authentication
+
+Currently, the API does not require authentication. All endpoints are publicly accessible for educational purposes.
+
+**Note**: In future versions, authentication may be added for write operations.
+
+---
+
+## Root Endpoint
+
+### GET /
+
+Returns API information and available endpoints.
+
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/
+```
+
+**Response:**
+```json
+{
+  "message": "Vietnamese History API",
+  "status": "Running",
+  "version": "1.0.0",
+  "endpoints": {
+    "health": "/api/health",
+    "periods": "/api/periods",
+    "subperiods": "/api/subperiods",
+    "events": "/api/events",
+    "stats": "/api/stats"
+  },
+  "documentation": "See /api/health for system status"
+}
+```
 
 ---
 
@@ -25,14 +80,24 @@ http://localhost:3000/api
 
 Check if the API server is running and database is connected.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/health
+```
+
 **Response:**
 ```json
 {
   "status": "OK",
   "database": "Connected",
+  "environment": "production",
   "timestamp": "2026-01-09T10:30:00.000Z"
 }
 ```
+
+**Status Codes:**
+- `200`: API is healthy and database is connected
+- `500`: API is running but database connection failed
 
 ---
 
@@ -41,6 +106,11 @@ Check if the API server is running and database is connected.
 ### GET /api/periods
 
 Get all historical periods sorted by order.
+
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/periods
+```
 
 **Response:**
 ```json
@@ -76,6 +146,11 @@ Get all historical periods sorted by order.
 
 Get all sub-periods sorted by order.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/subperiods
+```
+
 **Response:**
 ```json
 [
@@ -96,13 +171,13 @@ Get all sub-periods sorted by order.
 
 Get all sub-periods for a specific period.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/subperiods/period/507f1f77bcf86cd799439011
+```
+
 **Parameters:**
 - `periodId`: MongoDB ObjectId of the parent period
-
-**Example:**
-```
-GET /api/subperiods/period/507f1f77bcf86cd799439011
-```
 
 **Response:**
 ```json
@@ -125,6 +200,11 @@ GET /api/subperiods/period/507f1f77bcf86cd799439011
 ### GET /api/events
 
 Get all historical events.
+
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events
+```
 
 **Response:**
 ```json
@@ -162,13 +242,13 @@ Get all historical events.
 
 Get a single event by ID.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events/507f1f77bcf86cd799439011
+```
+
 **Parameters:**
 - `id`: MongoDB ObjectId of the event
-
-**Example:**
-```
-GET /api/events/507f1f77bcf86cd799439011
-```
 
 **Response:**
 ```json
@@ -192,13 +272,13 @@ GET /api/events/507f1f77bcf86cd799439011
 
 Get all events from a specific period.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events/period/507f1f77bcf86cd799439011
+```
+
 **Parameters:**
 - `periodId`: MongoDB ObjectId of the period
-
-**Example:**
-```
-GET /api/events/period/507f1f77bcf86cd799439011
-```
 
 **Response:**
 Array of events sorted by date (year ascending)
@@ -207,13 +287,13 @@ Array of events sorted by date (year ascending)
 
 Get all events from a specific sub-period.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events/subperiod/507f1f77bcf86cd799439011
+```
+
 **Parameters:**
 - `subPeriodId`: MongoDB ObjectId of the sub-period
-
-**Example:**
-```
-GET /api/events/subperiod/507f1f77bcf86cd799439011
-```
 
 **Response:**
 Array of events sorted by date (year ascending)
@@ -222,13 +302,18 @@ Array of events sorted by date (year ascending)
 
 Get events within a year range.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events/range?start=-2879&end=-111
+```
+
 **Query Parameters:**
 - `start`: Start year (integer, negative for BC)
 - `end`: End year (integer)
 
 **Example:**
 ```
-GET /api/events/range?start=-2879&end=-111
+https://vietnamese-history-api-dvwf.onrender.com/api/events/range?start=-2879&end=-111
 ```
 
 **Response:**
@@ -241,30 +326,6 @@ Array of events between the specified years
 }
 ```
 
-### GET /api/events/near
-
-Get events near a geographical location (geospatial query).
-
-**Query Parameters:**
-- `lat`: Latitude (float)
-- `lng`: Longitude (float)
-- `distance`: Maximum distance in meters (integer, default: 100000)
-
-**Example:**
-```
-GET /api/events/near?lat=21.0285&lng=105.8542&distance=50000
-```
-
-**Response:**
-Array of events within the specified distance
-
-**Error Response (400):**
-```json
-{
-  "error": "Valid latitude and longitude required"
-}
-```
-
 ---
 
 ## Search
@@ -273,12 +334,17 @@ Array of events within the specified distance
 
 Search events by text query.
 
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/events/search?q=battle
+```
+
 **Query Parameters:**
 - `q`: Search query string
 
 **Example:**
 ```
-GET /api/events/search?q=battle
+https://vietnamese-history-api-dvwf.onrender.com/api/events/search?q=battle
 ```
 
 **Response:**
@@ -295,112 +361,16 @@ Array of events matching the search query
 
 ---
 
-## Create, Update, Delete (Admin Operations)
-
-### POST /api/events
-
-Create a new event.
-
-**Request Body:**
-```json
-{
-  "title": "Event Title",
-  "periodId": { "$oid": "..." },
-  "date": {
-    "year": 1945,
-    "month": 8,
-    "day": 19
-  },
-  "location": {
-    "name": "Hanoi",
-    "coordinates": {
-      "lat": 21.0285,
-      "lng": 105.8542
-    }
-  },
-  "description": "Full description...",
-  "shortDescription": "Brief summary..."
-}
-```
-
-**Required Fields:**
-- `title`
-- `periodId`
-- `date` (with at least `year`)
-
-**Response (201):**
-```json
-{
-  "_id": { "$oid": "..." },
-  "title": "Event Title",
-  ...
-}
-```
-
-**Error Response (400):**
-```json
-{
-  "error": "Title, periodId, and date are required"
-}
-```
-
-### PUT /api/events/:id
-
-Update an existing event.
-
-**Parameters:**
-- `id`: MongoDB ObjectId of the event
-
-**Request Body:**
-```json
-{
-  "title": "Updated Title",
-  "description": "Updated description..."
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Event updated successfully"
-}
-```
-
-**Error Response (404):**
-```json
-{
-  "error": "Event not found"
-}
-```
-
-### DELETE /api/events/:id
-
-Delete an event.
-
-**Parameters:**
-- `id`: MongoDB ObjectId of the event
-
-**Response:**
-```json
-{
-  "message": "Event deleted successfully"
-}
-```
-
-**Error Response (404):**
-```json
-{
-  "error": "Event not found"
-}
-```
-
----
-
 ## Statistics
 
 ### GET /api/stats
 
 Get database statistics.
+
+**Production URL:**
+```
+https://vietnamese-history-api-dvwf.onrender.com/api/stats
+```
 
 **Response:**
 ```json
@@ -432,11 +402,29 @@ All endpoints may return the following error responses:
 ### 400 Bad Request
 Invalid input parameters or missing required fields.
 
+```json
+{
+  "error": "Valid start and end years required"
+}
+```
+
 ### 404 Not Found
 Resource not found (event, period, etc.).
 
+```json
+{
+  "error": "Event not found"
+}
+```
+
 ### 500 Internal Server Error
 Server or database error.
+
+```json
+{
+  "error": "Internal server error message"
+}
+```
 
 **Standard Error Response Format:**
 ```json
@@ -447,105 +435,119 @@ Server or database error.
 
 ---
 
-## Data Types
-
-### MongoDB ObjectId
-
-ObjectIds are represented as:
-```json
-{
-  "$oid": "507f1f77bcf86cd799439011"
-}
-```
-
-Or as plain strings in some contexts:
-```json
-"507f1f77bcf86cd799439011"
-```
-
-### Date Format
-
-Dates use a custom format:
-```json
-{
-  "year": 1945,      // Integer, negative for BC
-  "month": 8,        // Integer 0-11 (null if not specified)
-  "day": 19,         // Integer 1-31 (null if not specified)
-  "displayDate": "August 19, 1945 AD"  // Formatted string
-}
-```
-
-### Location Format
-
-Locations include name and coordinates:
-```json
-{
-  "name": "Hanoi",
-  "province": "Hanoi",
-  "coordinates": {
-    "lat": 21.0285,  // Latitude (float)
-    "lng": 105.8542   // Longitude (float)
-  }
-}
-```
-
----
-
 ## Rate Limiting
 
-Currently, there are no rate limits implemented. For production use, consider implementing rate limiting to prevent abuse.
+**Current Status**: No rate limiting implemented on Render deployment.
+
+**Note**: Render's free tier has the following limitations:
+- Services spin down after 15 minutes of inactivity
+- First request after spin down may take 30-60 seconds
+- 750 hours of free runtime per month (shared across all services)
 
 ---
 
 ## CORS
 
-The API supports Cross-Origin Resource Sharing (CORS) and accepts requests from all origins in development mode.
+The API supports Cross-Origin Resource Sharing (CORS) with the following configuration:
+
+**Production**: 
+- Allowed origins: 
+  - https://vietnam-history-sage.vercel.app
+  - https://vietnam-history-sage.vercel.app/
+
+**Development**: 
+- Allowed origins: All origins (*)
 
 ---
 
 ## Examples
 
-### JavaScript Fetch
+### JavaScript Fetch (Production)
 
 ```javascript
 // Get all events
-fetch('http://localhost:3000/api/events')
+fetch('https://vietnamese-history-api-dvwf.onrender.com/api/events')
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));
 
 // Search events
-fetch('http://localhost:3000/api/events/search?q=battle')
+fetch('https://vietnamese-history-api-dvwf.onrender.com/api/events/search?q=battle')
   .then(response => response.json())
   .then(data => console.log(data));
 
 // Get events by year range
-fetch('http://localhost:3000/api/events/range?start=1945&end=1975')
+fetch('https://vietnamese-history-api-dvwf.onrender.com/api/events/range?start=1945&end=1975')
   .then(response => response.json())
   .then(data => console.log(data));
 ```
 
-### cURL
+### cURL (Production)
 
 ```bash
 # Get all periods
-curl http://localhost:3000/api/periods
+curl https://vietnamese-history-api-dvwf.onrender.com/api/periods
 
 # Get specific event
-curl http://localhost:3000/api/events/507f1f77bcf86cd799439011
+curl https://vietnamese-history-api-dvwf.onrender.com/api/events/507f1f77bcf86cd799439011
 
 # Search events
-curl "http://localhost:3000/api/events/search?q=battle"
+curl "https://vietnamese-history-api-dvwf.onrender.com/api/events/search?q=battle"
 
-# Create new event (POST)
-curl -X POST http://localhost:3000/api/events \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Test Event",
-    "periodId": {"$oid": "507f1f77bcf86cd799439011"},
-    "date": {"year": 1945}
-  }'
+# Health check
+curl https://vietnamese-history-api-dvwf.onrender.com/api/health
 ```
+
+### Axios (Production)
+
+```javascript
+import axios from 'axios';
+
+const API_BASE_URL = 'https://vietnamese-history-api-dvwf.onrender.com/api';
+
+// Get all events
+const events = await axios.get(`${API_BASE_URL}/events`);
+
+// Search events
+const searchResults = await axios.get(`${API_BASE_URL}/events/search`, {
+  params: { q: 'battle' }
+});
+
+// Get events by period
+const periodEvents = await axios.get(`${API_BASE_URL}/events/period/${periodId}`);
+```
+
+---
+
+## Testing the API
+
+You can test the API using:
+
+1. **Browser**: Visit https://vietnamese-history-api-dvwf.onrender.com/api/health
+2. **Postman**: Import the endpoints and test
+3. **cURL**: Use the examples above
+4. **Frontend**: The deployed frontend at https://vietnam-history-sage.vercel.app
+
+---
+
+## Important Notes
+
+### Cold Start
+- The Render free tier spins down services after 15 minutes of inactivity
+- First request after spin down takes 30-60 seconds
+- Subsequent requests are fast (~100-200ms)
+
+### Performance
+- API responses are typically under 500ms (after warm-up)
+- Large collections (all events) may take 1-2 seconds
+- Consider implementing pagination for large datasets
+
+### Best Practices
+1. **Cache responses** when possible
+2. **Handle loading states** for cold starts
+3. **Use specific queries** instead of fetching all data
+4. **Implement error handling** for all requests
+5. **Show loading indicators** for better UX
 
 ---
 
@@ -558,6 +560,22 @@ Planned API improvements:
 - [ ] Pagination for large result sets
 - [ ] Filtering with multiple parameters
 - [ ] Sorting options
-- [ ] API versioning
+- [ ] API versioning (/api/v1/)
 - [ ] WebSocket support for real-time updates
 - [ ] GraphQL endpoint
+- [ ] Caching layer (Redis)
+- [ ] CDN integration
+
+---
+
+## Support
+
+For API issues or questions:
+- **GitHub Issues**: [Report an issue](https://github.com/yourusername/Vietnam_History/issues)
+- **Email**: contact@vietnamesehistory.edu.vn
+
+---
+
+**API Version**: 1.0.0  
+**Last Updated**: January 2026  
+**Status**: ✅ Production - Live on Render
